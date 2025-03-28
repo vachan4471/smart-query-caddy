@@ -19,13 +19,22 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
   }
 
   try {
-    // Check if we have an API key
-    const apiKey = config.openaiApiKey;
+    // Check if we have an API key - first try the dynamic getter, then fallback to static key
+    let apiKey = config.openaiApiKey;
+    
+    // If no dynamic key is found, use the static one
+    if (!apiKey && config.staticApiKey) {
+      apiKey = config.staticApiKey;
+      console.log('Using static API key');
+    }
+    
     if (!apiKey) {
       console.warn('OpenAI API key not found. Using mock responses.');
       return generateMockAnswer(question, fileData);
     }
 
+    console.log('Using OpenAI API with valid key');
+    
     // Prepare messages for OpenAI API
     const messages = [
       { role: 'system', content: systemPrompt },

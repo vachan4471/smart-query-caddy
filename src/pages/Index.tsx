@@ -1,24 +1,36 @@
-
 import React, { useState, useEffect } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
 import { config } from '@/utils/config';
 import { Input } from '@/components/ui/input';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, CheckCircleIcon } from 'lucide-react';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
+  const [apiKeySet, setApiKeySet] = useState<boolean>(false);
   
-  // Check if API key exists in localStorage on component mount
+  // Check if API key exists in localStorage or config on component mount
   useEffect(() => {
+    // Try to load from localStorage first
     const savedApiKey = localStorage.getItem('openai_api_key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      // Set the API key in window for the API to access
-      window.VITE_OPENAI_API_KEY = savedApiKey;
+    
+    // If there's a key in localStorage or config has a static key
+    if (savedApiKey || config.staticApiKey) {
+      // If there's a saved key, use it
+      if (savedApiKey) {
+        setApiKey(savedApiKey);
+        window.VITE_OPENAI_API_KEY = savedApiKey;
+      } else {
+        // Otherwise use the static key from config
+        setApiKey(config.staticApiKey);
+        window.VITE_OPENAI_API_KEY = config.staticApiKey;
+        // Also save it to localStorage for future use
+        localStorage.setItem('openai_api_key', config.staticApiKey);
+      }
+      setApiKeySet(true);
     }
   }, []);
   
@@ -26,9 +38,15 @@ const Index = () => {
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newApiKey = e.target.value;
     setApiKey(newApiKey);
-    localStorage.setItem('openai_api_key', newApiKey);
-    // Set the API key in window for the API to access
-    window.VITE_OPENAI_API_KEY = newApiKey;
+  };
+  
+  // Save the API key when the user submits it
+  const saveApiKey = () => {
+    if (apiKey && apiKey.startsWith('sk-')) {
+      localStorage.setItem('openai_api_key', apiKey);
+      window.VITE_OPENAI_API_KEY = apiKey;
+      setApiKeySet(true);
+    }
   };
 
   return (
@@ -45,21 +63,39 @@ const Index = () => {
         </header>
 
         <main className="max-w-4xl mx-auto bg-slate-800/50 p-6 md:p-8 rounded-xl backdrop-blur-sm border border-slate-700 shadow-xl">
-          {!config.openaiApiKey && !apiKey && (
+          {!apiKeySet ? (
             <div className="mb-6 p-4 bg-amber-900/50 border border-amber-700 rounded-lg flex items-start gap-3">
               <InfoIcon className="text-amber-400 mt-1 shrink-0" size={20} />
-              <div>
+              <div className="w-full">
                 <h3 className="font-medium text-amber-200">OpenAI API Key Required</h3>
                 <p className="text-amber-300/80 text-sm mt-1 mb-3">
                   Please enter your OpenAI API key below. The key will be stored in your browser's local storage and not sent to any server.
                 </p>
-                <Input
-                  type="password"
-                  placeholder="sk-..."
-                  value={apiKey}
-                  onChange={handleApiKeyChange}
-                  className="max-w-lg bg-amber-950/30 border-amber-800/50 text-white"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    placeholder="sk-..."
+                    value={apiKey}
+                    onChange={handleApiKeyChange}
+                    className="flex-1 bg-amber-950/30 border-amber-800/50 text-white"
+                  />
+                  <button 
+                    onClick={saveApiKey}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded transition-colors"
+                  >
+                    Save Key
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-lg flex items-start gap-3">
+              <CheckCircleIcon className="text-green-400 mt-1 shrink-0" size={20} />
+              <div>
+                <h3 className="font-medium text-green-200">API Key Configured</h3>
+                <p className="text-green-300/80 text-sm mt-1">
+                  Your OpenAI API key is set and ready to use. You can now ask TDS assignment questions.
+                </p>
               </div>
             </div>
           )}

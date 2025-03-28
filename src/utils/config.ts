@@ -1,6 +1,31 @@
 
+// Get the API key from environment variables or window object
+const getApiKey = () => {
+  // Check window object first (set via user input)
+  if (typeof window !== 'undefined' && window.VITE_OPENAI_API_KEY) {
+    return window.VITE_OPENAI_API_KEY;
+  }
+  
+  // Then check environment variables (set during build)
+  if (import.meta.env.VITE_OPENAI_API_KEY) {
+    return import.meta.env.VITE_OPENAI_API_KEY;
+  }
+  
+  // Finally check localStorage (saved from previous sessions)
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('openai_api_key') || '';
+  }
+  
+  return '';
+};
+
 export const config = {
-  openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  // This function will be called whenever the API key is needed
+  get openaiApiKey() {
+    return getApiKey();
+  },
+  // For setting a hard-coded API key (not recommended for production)
+  staticApiKey: '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'
 } as const;
 
 export const systemPrompt = `You are an AI assistant specifically designed to help with IIT Madras' Tools in Data Science (TDS) course assignments. You should:
