@@ -1,16 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
 import { config } from '@/utils/config';
 import { Input } from '@/components/ui/input';
-import { InfoIcon, CheckCircleIcon } from 'lucide-react';
+import { InfoIcon, CheckCircleIcon, AlertTriangleIcon } from 'lucide-react';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState<string>('');
   const [apiKeySet, setApiKeySet] = useState<boolean>(false);
+  const [useMockResponses, setUseMockResponses] = useState<boolean>(false);
   
   // Check if API key exists in localStorage or config on component mount
   useEffect(() => {
@@ -48,6 +50,20 @@ const Index = () => {
       setApiKeySet(true);
     }
   };
+
+  // Toggle mock responses
+  const toggleMockResponses = () => {
+    setUseMockResponses(!useMockResponses);
+    localStorage.setItem('use_mock_responses', (!useMockResponses).toString());
+  };
+
+  // Load mock response preference
+  useEffect(() => {
+    const savedPref = localStorage.getItem('use_mock_responses');
+    if (savedPref) {
+      setUseMockResponses(savedPref === 'true');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-indigo-950 text-white">
@@ -89,18 +105,43 @@ const Index = () => {
               </div>
             </div>
           ) : (
-            <div className="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-lg flex items-start gap-3">
-              <CheckCircleIcon className="text-green-400 mt-1 shrink-0" size={20} />
-              <div>
-                <h3 className="font-medium text-green-200">API Key Configured</h3>
-                <p className="text-green-300/80 text-sm mt-1">
-                  Your OpenAI API key is set and ready to use. You can now ask TDS assignment questions.
-                </p>
+            <>
+              <div className="mb-6 p-4 bg-green-900/50 border border-green-700 rounded-lg flex items-start gap-3">
+                <CheckCircleIcon className="text-green-400 mt-1 shrink-0" size={20} />
+                <div>
+                  <h3 className="font-medium text-green-200">API Key Configured</h3>
+                  <p className="text-green-300/80 text-sm mt-1">
+                    Your OpenAI API key is set and ready to use. You can now ask TDS assignment questions.
+                  </p>
+                </div>
               </div>
-            </div>
+              
+              <div className="mb-6 p-4 bg-blue-900/50 border border-blue-700 rounded-lg flex items-start gap-3">
+                <AlertTriangleIcon className="text-blue-400 mt-1 shrink-0" size={20} />
+                <div className="flex-1">
+                  <h3 className="font-medium text-blue-200">Free Tier Limitations</h3>
+                  <p className="text-blue-300/80 text-sm mt-1 mb-2">
+                    Using a free OpenAI account may result in rate limits or quota errors. 
+                    We'll automatically fall back to pre-defined mock responses when needed.
+                  </p>
+                  <div className="flex items-center">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={useMockResponses}
+                        onChange={toggleMockResponses}
+                      />
+                      <div className="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <span className="ml-3 text-sm font-medium text-blue-200">Always use mock responses</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
           
-          <QuestionForm setResult={setResult} setLoading={setLoading} />
+          <QuestionForm setResult={setResult} setLoading={setLoading} useMockResponses={useMockResponses} />
           
           {(result || loading) && (
             <div className="mt-8 pt-8 border-t border-slate-700">

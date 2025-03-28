@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,9 +7,10 @@ import { SendIcon, UploadIcon, Loader2Icon, XIcon } from 'lucide-react';
 interface QuestionFormProps {
   setResult: React.Dispatch<React.SetStateAction<string | null>>;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  useMockResponses?: boolean;
 }
 
-const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) => {
+const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, useMockResponses = false }) => {
   const [question, setQuestion] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -33,36 +33,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
     setResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('question', question);
-      if (file) {
-        formData.append('file', file);
-      }
-
-      // Get the base URL and create the API endpoint path
-      const baseUrl = window.location.origin;
-      const apiUrl = `${baseUrl}/api/tds`;
-      
-      console.log('Submitting to API:', apiUrl);
-      
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setResult(data.answer);
-      toast.success('Answer generated successfully!');
-    } catch (error) {
-      console.error('Error submitting question:', error);
-      
-      // If we can't use the API, use the LLM service directly
-      try {
-        const { generateAnswer } = await import('@/utils/llmService');
+      // If using mock responses, bypass API call
+      if (useMockResponses) {
+        const { generateMockAnswer } = await import('@/utils/llmService');
         
         // Read the file content if there's a file
         let fileData = null;
@@ -85,13 +58,44 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
           });
         }
         
-        const answer = await generateAnswer(question, fileData);
+        // @ts-ignore - TypeScript might complain about the generateMockAnswer import
+        const answer = await generateMockAnswer(question, fileData);
         setResult(answer);
-        toast.success('Answer generated using fallback method');
-      } catch (fallbackError) {
-        console.error('Fallback error:', fallbackError);
-        toast.error('Failed to generate answer. Please try again or check your API key.');
+        toast.success('Mock answer generated');
+        setLoading(false);
+        return;
       }
+
+      // Otherwise use the LLM service directly
+      const { generateAnswer } = await import('@/utils/llmService');
+      
+      // Read the file content if there's a file
+      let fileData = null;
+      if (file) {
+        const reader = new FileReader();
+        fileData = await new Promise((resolve) => {
+          reader.onload = (e) => {
+            resolve({
+              content: e.target?.result,
+              type: file.type,
+              name: file.name
+            });
+          };
+          
+          if (file.type.includes('text') || file.type.includes('json') || file.type.includes('csv')) {
+            reader.readAsText(file);
+          } else {
+            reader.readAsArrayBuffer(file);
+          }
+        });
+      }
+      
+      const answer = await generateAnswer(question, fileData);
+      setResult(answer);
+      toast.success('Answer generated successfully!');
+    } catch (error) {
+      console.error('Fallback error:', error);
+      toast.error('Failed to generate answer. Please try the mock response option.');
     } finally {
       setLoading(false);
     }
