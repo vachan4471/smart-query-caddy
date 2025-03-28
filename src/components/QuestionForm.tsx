@@ -39,7 +39,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
         formData.append('file', file);
       }
 
-      const response = await fetch('/api/tds', {
+      // Get the base URL and create the API endpoint path
+      const baseUrl = window.location.origin;
+      const apiUrl = `${baseUrl}/api/tds`;
+      
+      console.log('Submitting to API:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
@@ -53,7 +59,39 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
       toast.success('Answer generated successfully!');
     } catch (error) {
       console.error('Error submitting question:', error);
-      toast.error('Failed to generate answer. Please try again.');
+      
+      // If we can't use the API, use the LLM service directly
+      try {
+        const { generateAnswer } = await import('@/utils/llmService');
+        
+        // Read the file content if there's a file
+        let fileData = null;
+        if (file) {
+          const reader = new FileReader();
+          fileData = await new Promise((resolve) => {
+            reader.onload = (e) => {
+              resolve({
+                content: e.target?.result,
+                type: file.type,
+                name: file.name
+              });
+            };
+            
+            if (file.type.includes('text') || file.type.includes('json') || file.type.includes('csv')) {
+              reader.readAsText(file);
+            } else {
+              reader.readAsArrayBuffer(file);
+            }
+          });
+        }
+        
+        const answer = await generateAnswer(question, fileData);
+        setResult(answer);
+        toast.success('Answer generated using fallback method');
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+        toast.error('Failed to generate answer. Please try again or check your API key.');
+      }
     } finally {
       setLoading(false);
     }

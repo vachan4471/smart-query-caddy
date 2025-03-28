@@ -73,6 +73,12 @@ export default async function handler(
       }
     }
 
+    // Get the API key from headers if available
+    const apiKey = req.headers['x-openai-api-key'] as string;
+    if (apiKey) {
+      process.env.VITE_OPENAI_API_KEY = apiKey;
+    }
+
     // Generate answer using LLM
     const answer = await generateAnswer(question, fileData);
 
