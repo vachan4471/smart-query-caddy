@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { SendIcon, UploadIcon, XIcon, BookOpenIcon, HelpCircleIcon } from 'lucide-react';
+import { SendIcon, UploadIcon, XIcon, BookOpenIcon } from 'lucide-react';
 import { gaTopics } from '@/utils/preTrainedAnswers';
 
 interface QuestionFormProps {
@@ -79,18 +79,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
     toast.info('File removed');
   };
 
-  const examples = [
-    "What is the output of httpie with my email parameter?",
-    "How many Wednesdays are there between 1987-12-27 and 2015-09-11?",
-    "Sort this JSON array by age field: [...]",
-    "What is the result of the Google Sheets formula =SUM(ARRAY_CONSTRAIN(SEQUENCE(100, 100, 5, 11), 1, 10))?",
-  ];
-
-  const useExample = (example: string) => {
-    setQuestion(example);
-    toast.info('Example question loaded');
-  };
-
   const selectTopic = (topicId: string) => {
     setSelectedTopic(topicId === selectedTopic ? null : topicId);
     toast.info(`Filtered to ${topicId} questions`);
@@ -112,25 +100,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
         />
       </div>
       
-      <div className="mt-3">
-        <p className="text-sm text-slate-400 mb-2 flex items-center">
-          <HelpCircleIcon size={16} className="mr-2 text-blue-400" />
-          Try one of these examples:
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {examples.map((example, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => useExample(example)}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 py-1 px-2 rounded transition-colors hover:text-white"
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mt-4">
         <div className="relative group flex-1">
           <input
@@ -176,22 +145,25 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
         </div>
       </div>
 
-      {/* GA Topics */}
-      <div className="mt-4">
-        <h3 className="text-sm font-medium text-slate-300 mb-2">GA Topics:</h3>
-        <div className="flex flex-wrap gap-2">
+      {/* GA Topics Grid - Updated with card style like in the image */}
+      <div className="mt-8">
+        <h3 className="text-sm font-medium text-slate-300 mb-4">Graded Assignment Topics:</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {gaTopics.map((topic) => (
             <button
               key={topic.id}
               type="button"
               onClick={() => selectTopic(topic.id)}
-              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+              className={`p-4 rounded-lg transition-all text-left ${
                 selectedTopic === topic.id 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                : 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              {topic.id}: {topic.name}
+              <h4 className="text-lg font-medium text-blue-400 mb-2">
+                {topic.id}: {topic.name}
+              </h4>
+              <p className="text-sm opacity-80">{topic.description}</p>
             </button>
           ))}
         </div>

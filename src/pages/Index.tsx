@@ -4,9 +4,11 @@ import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
 import { config } from '@/utils/config';
 import { Input } from '@/components/ui/input';
-import { InfoIcon, CheckCircleIcon, MoonIcon, SunIcon } from 'lucide-react';
+import { InfoIcon, CheckCircleIcon, MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { addQAPair } from '@/utils/preTrainedAnswers';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
@@ -15,48 +17,55 @@ const Index = () => {
   const [apiKeySet, setApiKeySet] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   
-  // Check if API key exists in localStorage or config on component mount
   useEffect(() => {
-    // Try to load from localStorage first
     const savedApiKey = localStorage.getItem('openai_api_key');
-    
-    // If there's a key in localStorage or config has a static key
     if (savedApiKey || config.staticApiKey) {
-      // If there's a saved key, use it
       if (savedApiKey) {
         setApiKey(savedApiKey);
         window.VITE_OPENAI_API_KEY = savedApiKey;
       } else {
-        // Otherwise use the static key from config
         setApiKey(config.staticApiKey);
         window.VITE_OPENAI_API_KEY = config.staticApiKey;
-        // Also save it to localStorage for future use
         localStorage.setItem('openai_api_key', config.staticApiKey);
       }
       setApiKeySet(true);
     }
 
-    // Load dark mode preference
     const savedTheme = localStorage.getItem('theme_preference');
     if (savedTheme) {
       setDarkMode(savedTheme === 'dark');
     }
 
-    // Add CSS class for dark mode
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    try {
+      const savedQAPairs = localStorage.getItem('preTrainedData');
+      if (savedQAPairs) {
+        const pairs = JSON.parse(savedQAPairs);
+        console.log(`Loaded ${pairs.length} Q&A pairs from localStorage`);
+      }
+    } catch (error) {
+      console.error('Error loading Q&A pairs:', error);
+    }
   }, []);
   
-  // Save API key to localStorage when it changes
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+  
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newApiKey = e.target.value;
     setApiKey(newApiKey);
   };
   
-  // Save the API key when the user submits it
   const saveApiKey = () => {
     if (apiKey && apiKey.startsWith('sk-')) {
       localStorage.setItem('openai_api_key', apiKey);
@@ -65,26 +74,17 @@ const Index = () => {
     }
   };
 
-  // Toggle dark/light mode
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     localStorage.setItem('theme_preference', newDarkMode ? 'dark' : 'light');
-    
-    // Update the document class
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   };
 
-  // This function would be exposed if you want to add more Q&A pairs later
   const addNewQAPair = (question: string, answer: string, topic: string) => {
     addQAPair(question, answer, topic);
+    toast.success('New Q&A pair added successfully!');
   };
 
-  // Dynamic background gradient based on theme
   const bgGradient = darkMode 
     ? "bg-gradient-to-b from-slate-900 to-indigo-950" 
     : "bg-gradient-to-b from-blue-50 to-indigo-100";
@@ -125,6 +125,93 @@ const Index = () => {
             <span className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full">
               IIT Madras Online Degree Program
             </span>
+          </div>
+          
+          <div className="absolute top-0 left-0">
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
+                  darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
+                } transition-colors`}>
+                  <PlusCircleIcon size={14} />
+                  <span>Add Q&A</span>
+                </button>
+              </SheetTrigger>
+              <SheetContent className={darkMode ? "bg-slate-800 text-white border-slate-700" : ""}>
+                <SheetHeader>
+                  <SheetTitle className={darkMode ? "text-white" : ""}>
+                    Add New Question & Answer
+                  </SheetTitle>
+                  <SheetDescription className={darkMode ? "text-slate-300" : ""}>
+                    Add new pre-trained Q&A pairs to the TDS Solver database.
+                  </SheetDescription>
+                </SheetHeader>
+                
+                <div className="mt-6 space-y-4">
+                  <div className="space-y-2">
+                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
+                      Topic
+                    </label>
+                    <Command className={darkMode ? "bg-slate-900 border border-slate-700" : ""}>
+                      <CommandInput placeholder="Search topics..." className={darkMode ? "text-white" : ""} />
+                      <CommandList>
+                        <CommandEmpty>No topics found.</CommandEmpty>
+                        <CommandGroup>
+                          {gaTopics.map((topic) => (
+                            <CommandItem 
+                              key={topic.id}
+                              className={darkMode ? "text-white hover:bg-slate-700" : ""}
+                              onSelect={() => {
+                                toast.info(`Selected ${topic.id}`);
+                                // Implementation would go here
+                              }}
+                            >
+                              {topic.id}: {topic.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
+                      Question
+                    </label>
+                    <Textarea 
+                      placeholder="Enter the full question text..." 
+                      className={`min-h-20 ${darkMode ? "bg-slate-900 border-slate-700 text-white" : ""}`}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
+                      Answer
+                    </label>
+                    <Textarea 
+                      placeholder="Enter the correct answer..." 
+                      className={`min-h-20 ${darkMode ? "bg-slate-900 border-slate-700 text-white" : ""}`}
+                    />
+                  </div>
+                  
+                  <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
+                    Add to Database
+                  </Button>
+                  
+                  <div className={`p-4 rounded-md text-sm ${darkMode ? "bg-slate-900 text-slate-300" : "bg-slate-100"}`}>
+                    <h4 className="font-medium mb-2">Using the Console Method:</h4>
+                    <p className="mb-2">You can also add Q&A pairs directly through the browser console:</p>
+                    <pre className={`p-3 rounded text-xs overflow-x-auto ${darkMode ? "bg-slate-950" : "bg-white border"}`}>
+                      window.addQAPair(
+                        "Your question here",
+                        "Your answer here",
+                        "GA1" // Topic ID
+                      );
+                    </pre>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </header>
 
@@ -191,7 +278,6 @@ const Index = () => {
   );
 };
 
-// Add the VITE_OPENAI_API_KEY property to the Window interface
 declare global {
   interface Window {
     VITE_OPENAI_API_KEY?: string;

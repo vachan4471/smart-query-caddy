@@ -36,17 +36,42 @@ export const preTrainedData: QuestionAnswer[] = [
     answer: '[{"name":"Nora","age":4},{"name":"Ivy","age":11},{"name":"David","age":14},{"name":"Karen","age":21},{"name":"Liam","age":21},{"name":"Charlie","age":27},{"name":"Alice","age":35},{"name":"Grace","age":41},{"name":"Henry","age":62},{"name":"Oscar","age":62},{"name":"Jack","age":64},{"name":"Bob","age":68},{"name":"Frank","age":70},{"name":"Paul","age":77},{"name":"Mary","age":89},{"name":"Emma","age":94}]',
     topic: "GA3"
   },
-  // Add placeholder for more questions - can be expanded later
-  // This is where users can add more questions and answers
+  // Add your additional questions here following the same format
+  // Example:
+  // {
+  //   question: "Your question text here...",
+  //   answer: "Your answer text here...",
+  //   topic: "GA1" // Choose from GA1, GA2, GA3, GA4, GA5
+  // },
 ];
 
-// Topics available in the course
+// Topics available in the course with detailed descriptions
 export const gaTopics = [
-  { id: "GA1", name: "Basic Command Line Tools" },
-  { id: "GA2", name: "Spreadsheets & Data Analysis" },
-  { id: "GA3", name: "Data Formats & Processing" },
-  { id: "GA4", name: "Large Language Models & AI Tools" },
-  { id: "GA5", name: "Data Visualization & Reporting" },
+  { 
+    id: "GA1", 
+    name: "Basic Command Line Tools",
+    description: "VS Code, HTTP requests, file operations, and basic tools"
+  },
+  { 
+    id: "GA2", 
+    name: "Markdown & Documentation", 
+    description: "Markdown, GitHub Pages, Docker, and API deployment"
+  },
+  { 
+    id: "GA3", 
+    name: "Data Formats & Processing",
+    description: "Sentiment analysis, embeddings, and function calling" 
+  },
+  { 
+    id: "GA4", 
+    name: "APIs & Data Extraction",
+    description: "APIs, scheduled actions, and data extraction" 
+  },
+  { 
+    id: "GA5", 
+    name: "Data Analysis & Transformation",
+    description: "Data cleaning, parsing, and transformation" 
+  },
 ];
 
 /**
@@ -89,7 +114,22 @@ export function findMatchingAnswer(question: string): { answer: string; found: b
   return { answer: '', found: false };
 }
 
-// Helper function to add a new Q&A pair to the database
+/**
+ * Function to add a new question and answer pair to the database
+ * To add more questions, follow these steps:
+ * 1. Copy the addQAPair export from this file
+ * 2. Open the browser console (F12 in most browsers)
+ * 3. Paste and execute the following code template for each Q&A pair:
+ * 
+ * window.addQAPair(
+ *   "Your full question text here", 
+ *   "Your full answer text here",
+ *   "GA1" // Use GA1, GA2, GA3, GA4, or GA5 based on the topic
+ * );
+ * 
+ * 4. The question will be added to localStorage for this session
+ * 5. For permanent storage, copy the code back to this file inside the preTrainedData array
+ */
 export function addQAPair(question: string, answer: string, topic: string = "GA1"): void {
   const newPair = { question, answer, topic };
   
@@ -102,7 +142,20 @@ export function addQAPair(question: string, answer: string, topic: string = "GA1
     const currentData = JSON.parse(localStorage.getItem('preTrainedData') || '[]');
     currentData.push(newPair);
     localStorage.setItem('preTrainedData', JSON.stringify(currentData));
+    console.log('Added new Q&A pair to localStorage:', newPair);
   } catch (error) {
     console.error('Failed to save to localStorage:', error);
   }
+}
+
+// Add to the global window object for easy console access
+declare global {
+  interface Window {
+    addQAPair: typeof addQAPair;
+  }
+}
+
+// Make it accessible from the browser console
+if (typeof window !== 'undefined') {
+  window.addQAPair = addQAPair;
 }

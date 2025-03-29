@@ -134,4 +134,39 @@
   .animate-delay-300 {
     animation-delay: 300ms;
   }
+  
+  /* Card hover effects */
+  .hover-card-effect {
+    transition: all 0.3s ease;
+  }
+  
+  .hover-card-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+  }
+  
+  /* Animations for loading state */
+  .thinking-dots::after {
+    content: '';
+    animation: thinking 1.5s infinite;
+  }
+  
+  @keyframes thinking {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+    100% { content: '.'; }
+  }
+  
+  /* Gradient text animation */
+  .gradient-text-animate {
+    background-size: 200% 200%;
+    animation: gradient-animation 3s ease infinite;
+  }
+  
+  @keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
 }
