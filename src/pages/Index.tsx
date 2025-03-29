@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { config } from '@/utils/config';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { InfoIcon, CheckCircleIcon, MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { addQAPair } from '@/utils/preTrainedAnswers';
+import { addQAPair, gaTopics } from '@/utils/preTrainedAnswers';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 
