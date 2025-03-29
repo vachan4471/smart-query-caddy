@@ -1,9 +1,8 @@
-
 import { config, systemPrompt } from './config';
-import { generateMockAnswer } from './mockAnswers';
+import { findMatchingAnswer } from './preTrainedAnswers';
 
 /**
- * Service for interacting with LLM APIs
+ * Service for interacting with LLM APIs and pre-trained answers
  */
 
 export async function generateAnswer(question: string, fileData: any = null): Promise<string> {
@@ -19,11 +18,16 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
     });
   }
 
-  // Check if always use mock responses is enabled
-  if (typeof window !== 'undefined' && localStorage.getItem('use_mock_responses') === 'true') {
-    console.log('Using mock responses by user preference');
-    return generateMockAnswer(question, fileData);
+  // First, check if we have a pre-trained answer
+  const { answer, found } = findMatchingAnswer(question);
+  if (found) {
+    console.log('Found pre-trained answer');
+    // Simulate AI thinking time for better UX (300-1500ms)
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 1200 + 300));
+    return answer;
   }
+
+  console.log('No pre-trained answer found, trying OpenAI API');
 
   try {
     // Check if we have an API key - first try the dynamic getter, then fallback to static key
@@ -36,8 +40,8 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
     }
     
     if (!apiKey) {
-      console.warn('OpenAI API key not found. Using mock responses.');
-      return generateMockAnswer(question, fileData);
+      console.warn('OpenAI API key not found. Using generic answer.');
+      return "I couldn't find a pre-trained answer for this question, and no OpenAI API key is available. Please try a different question or check the API key configuration.";
     }
 
     console.log('Using OpenAI API with valid key');
@@ -73,12 +77,12 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
       const data = await response.json();
       return data.choices[0].message.content.trim();
     } catch (error) {
-      console.log('Failed with gpt-3.5-turbo, falling back to mock response');
-      return generateMockAnswer(question, fileData);
+      console.log('Failed with OpenAI API, falling back to generic response');
+      return "I couldn't find a pre-trained answer for this question, and the OpenAI API request failed. Please try again later or try a different question.";
     }
   } catch (error) {
     console.error('Error generating answer:', error);
-    return `Error: ${error instanceof Error ? error.message : String(error)}. Please try again later or check our mock responses.`;
+    return `Error: ${error instanceof Error ? error.message : String(error)}. Please try again later or check with a different question.`;
   }
 }
 
@@ -102,5 +106,10 @@ function formatUserPrompt(question: string, fileData: any = null): string {
   return prompt;
 }
 
-// Re-export the mock answer function for direct use
-export { generateMockAnswer };
+// Let's keep the mock function for backward compatibility but we won't be using it much
+export function generateMockAnswer(question: string, fileData: any = null): string {
+  const { answer, found } = findMatchingAnswer(question);
+  if (found) return answer;
+  
+  return "This question is not in our pre-trained database yet. Please try another question or check back later when more questions have been added.";
+}
