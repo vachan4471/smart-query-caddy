@@ -1,39 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { config } from '@/utils/config';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { InfoIcon, CheckCircleIcon, MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { addQAPair, gaTopics } from '@/utils/preTrainedAnswers';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [apiKey, setApiKey] = useState<string>('');
-  const [apiKeySet, setApiKeySet] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
+  const resultRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('openai_api_key');
-    if (savedApiKey || config.staticApiKey) {
-      if (savedApiKey) {
-        setApiKey(savedApiKey);
-        window.VITE_OPENAI_API_KEY = savedApiKey;
-      } else {
-        setApiKey(config.staticApiKey);
-        window.VITE_OPENAI_API_KEY = config.staticApiKey;
-        localStorage.setItem('openai_api_key', config.staticApiKey);
-      }
-      setApiKeySet(true);
+    // Set API key if available in config
+    if (config.staticApiKey) {
+      window.VITE_OPENAI_API_KEY = config.staticApiKey;
     }
 
     const savedTheme = localStorage.getItem('theme_preference');
@@ -65,19 +50,6 @@ const Index = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
-  
-  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newApiKey = e.target.value;
-    setApiKey(newApiKey);
-  };
-  
-  const saveApiKey = () => {
-    if (apiKey && apiKey.startsWith('sk-')) {
-      localStorage.setItem('openai_api_key', apiKey);
-      window.VITE_OPENAI_API_KEY = apiKey;
-      setApiKeySet(true);
-    }
-  };
 
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
@@ -151,13 +123,13 @@ const Index = () => {
             )}
           </div>
           
-          <QuestionForm setResult={setResult} setLoading={setLoading} />
+          <QuestionForm setResult={setResult} setLoading={setLoading} resultRef={resultRef} />
           
-          {(result || loading) && (
-            <div className={`mt-8 pt-8 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+          <div ref={resultRef} className={`${(result || loading) ? 'mt-8 pt-8 border-t' : ''} ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+            {(result || loading) && (
               <ResultDisplay result={result} loading={loading} />
-            </div>
-          )}
+            )}
+          </div>
         </main>
 
         <footer className={`mt-16 text-center ${darkMode ? 'text-slate-400' : 'text-slate-600'} text-sm`}>

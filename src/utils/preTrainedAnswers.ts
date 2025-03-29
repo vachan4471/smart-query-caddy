@@ -45,32 +45,32 @@ export const preTrainedData: QuestionAnswer[] = [
   // },
 ];
 
-// Topics available in the course with detailed descriptions
+// Updated Topics with detailed descriptions based on user's provided content
 export const gaTopics = [
   { 
     id: "GA1", 
     name: "Basic Command Line Tools",
-    description: "VS Code, HTTP requests, file operations, and basic tools"
+    description: "VS Code, HTTP requests, file operations, SQL queries, and essential development tools"
   },
   { 
     id: "GA2", 
-    name: "Markdown & Documentation", 
-    description: "Markdown, GitHub Pages, Docker, and API deployment"
+    name: "Documentation & Deployment", 
+    description: "Markdown, GitHub Pages, Docker, API deployment, and automation with GitHub Actions"
   },
   { 
     id: "GA3", 
-    name: "Data Formats & Processing",
-    description: "Sentiment analysis, embeddings, and function calling" 
+    name: "LLM & Embeddings",
+    description: "Sentiment analysis, token cost, embeddings, vector databases, and function calling" 
   },
   { 
     id: "GA4", 
-    name: "APIs & Data Extraction",
-    description: "APIs, scheduled actions, and data extraction" 
+    name: "Web Scraping & APIs",
+    description: "HTML extraction, web scraping, API access, and automated scheduled actions" 
   },
   { 
     id: "GA5", 
-    name: "Data Analysis & Transformation",
-    description: "Data cleaning, parsing, and transformation" 
+    name: "Data Processing & Transformation",
+    description: "Excel/data cleaning, log analysis, JSON parsing, and media processing" 
   },
 ];
 

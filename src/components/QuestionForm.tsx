@@ -9,9 +9,10 @@ import { gaTopics } from '@/utils/preTrainedAnswers';
 interface QuestionFormProps {
   setResult: React.Dispatch<React.SetStateAction<string | null>>;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  resultRef: React.RefObject<HTMLDivElement>;
 }
 
-const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) => {
+const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resultRef }) => {
   const [question, setQuestion] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -34,6 +35,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
 
     setLoading(true);
     setResult(null);
+
+    // Scroll to result section
+    setTimeout(() => {
+      if (resultRef.current) {
+        resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
 
     try {
       // Use the LLM service
@@ -86,6 +94,17 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Animated Text Section - Moved above the question input */}
+      <div className="py-3 bg-slate-800/40 rounded-md overflow-hidden mb-6">
+        <div className="animate-marquee whitespace-nowrap">
+          <span className="text-blue-400 mx-4">Welcome to TDS Solver</span>
+          <span className="text-purple-400 mx-4">IIT Madras Online Degree</span>
+          <span className="text-pink-400 mx-4">21f3001091@ds.study.iitm.ac.in</span>
+          <span className="text-green-400 mx-4">TDS Project 2</span>
+          <span className="text-yellow-400 mx-4">Tools in Data Science</span>
+        </div>
+      </div>
+      
       <div>
         <label htmlFor="question" className="block text-sm font-medium text-slate-300 mb-2 flex items-center">
           <BookOpenIcon size={16} className="mr-2 text-blue-400" />
@@ -94,7 +113,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
         <Textarea
           id="question"
           placeholder="Type or paste your question here..."
-          className="min-h-48 bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="min-h-60 bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
@@ -132,17 +151,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
           <SendIcon size={16} className="mr-2" />
           Get Answer
         </Button>
-      </div>
-
-      {/* Animated Text Section */}
-      <div className="mt-6 py-2 bg-slate-800/40 rounded-md overflow-hidden">
-        <div className="animate-marquee whitespace-nowrap">
-          <span className="text-blue-400 mx-4">Welcome to TDS Solver</span>
-          <span className="text-purple-400 mx-4">IIT Madras Online Degree</span>
-          <span className="text-pink-400 mx-4">21f3001091@ds.study.iitm.ac.in</span>
-          <span className="text-green-400 mx-4">TDS Project 2</span>
-          <span className="text-yellow-400 mx-4">Tools in Data Science</span>
-        </div>
       </div>
 
       {/* GA Topics Grid - Updated with card style like in the image */}
