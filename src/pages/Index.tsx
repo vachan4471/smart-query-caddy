@@ -59,14 +59,14 @@ const Index = () => {
 
   const bgGradient = darkMode 
     ? "bg-gradient-to-b from-slate-900 to-indigo-950" 
-    : "bg-gradient-to-b from-blue-50 to-indigo-100";
+    : "bg-gradient-to-b from-blue-100 to-indigo-50";
 
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-white/80 border-slate-200";
+    : "bg-white/90 border-slate-200";
 
   return (
-    <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+    <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-700'}`}>
       <Toaster position="top-right" />
       <div className="container mx-auto px-4 py-12">
         <header className="text-center mb-12 relative">
@@ -90,7 +90,7 @@ const Index = () => {
               TDS Solver
             </h1>
           </div>
-          <p className={`text-xl ${darkMode ? 'text-slate-300' : 'text-slate-700'} max-w-2xl mx-auto`}>
+          <p className={`text-xl ${darkMode ? 'text-slate-300' : 'text-slate-600'} max-w-2xl mx-auto`}>
             Your AI assistant for Tools in Data Science assignments
           </p>
           <div className="mt-2 flex justify-center">
@@ -101,8 +101,8 @@ const Index = () => {
           
           <div className="absolute top-0 left-0">
             <Link to="/admin" className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
-              darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
-            } transition-colors`}>
+              darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-300 hover:bg-slate-400'
+            } transition-colors ${darkMode ? 'text-white' : 'text-slate-700'}`}>
               <PlusCircleIcon size={14} />
               <span>Admin</span>
             </Link>
@@ -125,14 +125,14 @@ const Index = () => {
           
           <QuestionForm setResult={setResult} setLoading={setLoading} resultRef={resultRef} />
           
-          <div ref={resultRef} className={`${(result || loading) ? 'mt-8 pt-8 border-t' : ''} ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+          <div ref={resultRef} className={`${(result || loading) ? 'mt-8 pt-8 border-t' : ''} ${darkMode ? 'border-slate-700' : 'border-slate-300'}`}>
             {(result || loading) && (
               <ResultDisplay result={result} loading={loading} />
             )}
           </div>
         </main>
 
-        <footer className={`mt-16 text-center ${darkMode ? 'text-slate-400' : 'text-slate-600'} text-sm`}>
+        <footer className={`mt-16 text-center ${darkMode ? 'text-slate-400' : 'text-slate-500'} text-sm`}>
           <p>IIT Madras Online Degree Program • {new Date().getFullYear()}</p>
           <p className="mt-2">
             <a 

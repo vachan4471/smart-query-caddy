@@ -1,3 +1,4 @@
+
 import { config, systemPrompt } from './config';
 import { findMatchingAnswer } from './preTrainedAnswers';
 
@@ -41,7 +42,7 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
     
     if (!apiKey) {
       console.warn('OpenAI API key not found. Using generic answer.');
-      return "I couldn't find a pre-trained answer for this question, and no OpenAI API key is available. Please try a different question or check the API key configuration.";
+      return "I don't have an answer for this specific question yet. Please try a different TDS assignment question, or check back later when more content has been added to our knowledge base.";
     }
 
     console.log('Using OpenAI API with valid key');
@@ -78,11 +79,11 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
       return data.choices[0].message.content.trim();
     } catch (error) {
       console.log('Failed with OpenAI API, falling back to generic response');
-      return "I couldn't find a pre-trained answer for this question, and the OpenAI API request failed. Please try again later or try a different question.";
+      return "I don't recognize this specific question. Could you try rephrasing it or asking a different TDS assignment question? Our system works best with official course assignments from the IIT Madras program.";
     }
   } catch (error) {
     console.error('Error generating answer:', error);
-    return `Error: ${error instanceof Error ? error.message : String(error)}. Please try again later or check with a different question.`;
+    return `Sorry, I encountered an error while processing your question. Please try again with a different question from your TDS assignments.`;
   }
 }
 
@@ -111,5 +112,5 @@ export function generateMockAnswer(question: string, fileData: any = null): stri
   const { answer, found } = findMatchingAnswer(question);
   if (found) return answer;
   
-  return "This question is not in our pre-trained database yet. Please try another question or check back later when more questions have been added.";
+  return "This question is not in our database yet. Please try another question from your TDS assignments or check back later when more content has been added.";
 }
