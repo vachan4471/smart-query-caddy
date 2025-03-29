@@ -94,7 +94,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading }) =>
         <Textarea
           id="question"
           placeholder="Type or paste your question here..."
-          className="min-h-32 bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="min-h-48 bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
@@ -12,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { addQAPair, gaTopics } from '@/utils/preTrainedAnswers';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
@@ -83,11 +85,6 @@ const Index = () => {
     localStorage.setItem('theme_preference', newDarkMode ? 'dark' : 'light');
   };
 
-  const addNewQAPair = (question: string, answer: string, topic: string) => {
-    addQAPair(question, answer, topic);
-    toast.success('New Q&A pair added successfully!');
-  };
-
   const bgGradient = darkMode 
     ? "bg-gradient-to-b from-slate-900 to-indigo-950" 
     : "bg-gradient-to-b from-blue-50 to-indigo-100";
@@ -131,130 +128,28 @@ const Index = () => {
           </div>
           
           <div className="absolute top-0 left-0">
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
-                  darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
-                } transition-colors`}>
-                  <PlusCircleIcon size={14} />
-                  <span>Add Q&A</span>
-                </button>
-              </SheetTrigger>
-              <SheetContent className={darkMode ? "bg-slate-800 text-white border-slate-700" : ""}>
-                <SheetHeader>
-                  <SheetTitle className={darkMode ? "text-white" : ""}>
-                    Add New Question & Answer
-                  </SheetTitle>
-                  <SheetDescription className={darkMode ? "text-slate-300" : ""}>
-                    Add new pre-trained Q&A pairs to the TDS Solver database.
-                  </SheetDescription>
-                </SheetHeader>
-                
-                <div className="mt-6 space-y-4">
-                  <div className="space-y-2">
-                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
-                      Topic
-                    </label>
-                    <Command className={darkMode ? "bg-slate-900 border border-slate-700" : ""}>
-                      <CommandInput placeholder="Search topics..." className={darkMode ? "text-white" : ""} />
-                      <CommandList>
-                        <CommandEmpty>No topics found.</CommandEmpty>
-                        <CommandGroup>
-                          {gaTopics.map((topic) => (
-                            <CommandItem 
-                              key={topic.id}
-                              className={darkMode ? "text-white hover:bg-slate-700" : ""}
-                              onSelect={() => {
-                                toast.info(`Selected ${topic.id}`);
-                                // Implementation would go here
-                              }}
-                            >
-                              {topic.id}: {topic.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
-                      Question
-                    </label>
-                    <Textarea 
-                      placeholder="Enter the full question text..." 
-                      className={`min-h-20 ${darkMode ? "bg-slate-900 border-slate-700 text-white" : ""}`}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className={`text-sm font-medium ${darkMode ? "text-slate-300" : ""}`}>
-                      Answer
-                    </label>
-                    <Textarea 
-                      placeholder="Enter the correct answer..." 
-                      className={`min-h-20 ${darkMode ? "bg-slate-900 border-slate-700 text-white" : ""}`}
-                    />
-                  </div>
-                  
-                  <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
-                    Add to Database
-                  </Button>
-                  
-                  <div className={`p-4 rounded-md text-sm ${darkMode ? "bg-slate-900 text-slate-300" : "bg-slate-100"}`}>
-                    <h4 className="font-medium mb-2">Using the Console Method:</h4>
-                    <p className="mb-2">You can also add Q&A pairs directly through the browser console:</p>
-                    <pre className={`p-3 rounded text-xs overflow-x-auto ${darkMode ? "bg-slate-950" : "bg-white border"}`}>
-                      window.addQAPair(
-                        "Your question here",
-                        "Your answer here",
-                        "GA1" // Topic ID
-                      );
-                    </pre>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Link to="/admin" className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
+              darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
+            } transition-colors`}>
+              <PlusCircleIcon size={14} />
+              <span>Admin</span>
+            </Link>
           </div>
         </header>
 
         <main className={`max-w-4xl mx-auto ${cardBg} p-6 md:p-8 rounded-xl backdrop-blur-sm shadow-xl`}>
-          {!apiKeySet ? (
-            <div className={`mb-6 p-4 ${darkMode ? 'bg-amber-900/50 border-amber-700' : 'bg-amber-50 border-amber-200'} rounded-lg flex items-start gap-3`}>
-              <InfoIcon className={`${darkMode ? 'text-amber-400' : 'text-amber-600'} mt-1 shrink-0`} size={20} />
-              <div className="w-full">
-                <h3 className={`font-medium ${darkMode ? 'text-amber-200' : 'text-amber-800'}`}>OpenAI API Key Required</h3>
-                <p className={`${darkMode ? 'text-amber-300/80' : 'text-amber-700'} text-sm mt-1 mb-3`}>
-                  Please enter your OpenAI API key below. The key will be stored in your browser's local storage and not sent to any server.
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKey}
-                    onChange={handleApiKeyChange}
-                    className={`flex-1 ${darkMode ? 'bg-amber-950/30 border-amber-800/50 text-white' : 'bg-white border-amber-300 text-slate-800'}`}
-                  />
-                  <button 
-                    onClick={saveApiKey}
-                    className={`px-4 py-2 ${darkMode ? 'bg-amber-600 hover:bg-amber-500' : 'bg-amber-500 hover:bg-amber-400'} text-white rounded transition-colors`}
-                  >
-                    Save Key
-                  </button>
+          <div className="mb-6">
+            {loading && (
+              <div className="py-4 flex items-center justify-center space-x-2">
+                <div className="animate-pulse flex space-x-1">
+                  <div className="h-2 w-2 rounded-full bg-blue-600"></div>
+                  <div className="h-2 w-2 rounded-full bg-blue-600 animate-delay-150"></div>
+                  <div className="h-2 w-2 rounded-full bg-blue-600 animate-delay-300"></div>
                 </div>
+                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Processing your question...</span>
               </div>
-            </div>
-          ) : (
-            <div className={`mb-6 p-4 ${darkMode ? 'bg-green-900/50 border-green-700' : 'bg-green-50 border-green-200'} rounded-lg flex items-start gap-3`}>
-              <CheckCircleIcon className={`${darkMode ? 'text-green-400' : 'text-green-600'} mt-1 shrink-0`} size={20} />
-              <div>
-                <h3 className={`font-medium ${darkMode ? 'text-green-200' : 'text-green-800'}`}>API Key Configured</h3>
-                <p className={`${darkMode ? 'text-green-300/80' : 'text-green-700'} text-sm mt-1`}>
-                  Your OpenAI API key is set. The system will first try to use pre-trained answers before making API calls.
-                </p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
           
           <QuestionForm setResult={setResult} setLoading={setLoading} />
           
