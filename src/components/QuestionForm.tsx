@@ -17,6 +17,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
   const [file, setFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDarkMode = document.documentElement.classList.contains('dark');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -94,26 +95,30 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Animated Text Section - Moved above the question input */}
-      <div className="py-3 bg-slate-800/40 rounded-md overflow-hidden mb-6">
+      {/* Animated Text Section - Above the question input */}
+      <div className={`py-3 ${isDarkMode ? 'bg-slate-800/40' : 'bg-blue-100/80'} rounded-md overflow-hidden mb-6`}>
         <div className="animate-marquee whitespace-nowrap">
-          <span className="text-blue-400 mx-4">Welcome to TDS Solver</span>
-          <span className="text-purple-400 mx-4">IIT Madras Online Degree</span>
-          <span className="text-pink-400 mx-4">21f3001091@ds.study.iitm.ac.in</span>
-          <span className="text-green-400 mx-4">TDS Project 2</span>
-          <span className="text-yellow-400 mx-4">Tools in Data Science</span>
+          <span className={isDarkMode ? "text-blue-400 mx-4" : "text-blue-600 mx-4"}>Welcome to TDS Solver</span>
+          <span className={isDarkMode ? "text-purple-400 mx-4" : "text-purple-600 mx-4"}>IIT Madras Online Degree</span>
+          <span className={isDarkMode ? "text-pink-400 mx-4" : "text-pink-600 mx-4"}>21f3001091@ds.study.iitm.ac.in</span>
+          <span className={isDarkMode ? "text-green-400 mx-4" : "text-green-600 mx-4"}>TDS Project 2</span>
+          <span className={isDarkMode ? "text-yellow-400 mx-4" : "text-yellow-600 mx-4"}>Tools in Data Science</span>
         </div>
       </div>
       
       <div>
-        <label htmlFor="question" className="block text-sm font-medium text-slate-300 mb-2 flex items-center">
-          <BookOpenIcon size={16} className="mr-2 text-blue-400" />
+        <label htmlFor="question" className={`block text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} mb-2 flex items-center`}>
+          <BookOpenIcon size={16} className={`mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
           Enter your TDS assignment question
         </label>
         <Textarea
           id="question"
           placeholder="Type or paste your question here..."
-          className="min-h-60 bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className={`min-h-60 ${
+            isDarkMode 
+              ? 'bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
+              : 'bg-white border-slate-300 placeholder-slate-400 text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+          } transition-all`}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
@@ -128,15 +133,19 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
             onChange={handleFileChange}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
-          <div className="bg-slate-700/50 border border-dashed border-slate-600 text-slate-300 rounded-md px-4 py-3 flex items-center gap-2 hover:bg-slate-700/70 transition-colors">
-            <UploadIcon size={18} className="text-blue-400" />
+          <div className={`${
+            isDarkMode 
+              ? 'bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700/70' 
+              : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'
+          } border border-dashed rounded-md px-4 py-3 flex items-center gap-2 transition-colors`}>
+            <UploadIcon size={18} className={isDarkMode ? "text-blue-400" : "text-blue-500"} />
             <span className="text-sm">{file ? file.name : 'Attach file (optional)'}</span>
           </div>
           {file && (
             <button
               type="button"
               onClick={clearFile}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white z-20"
+              className={`absolute right-2 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800'} z-20`}
               aria-label="Remove file"
             >
               <XIcon size={16} />
@@ -146,16 +155,20 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
 
         <Button 
           type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-blue-900/20"
+          className={`${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
+              : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+          } text-white transition-all shadow-lg hover:shadow-blue-900/20`}
         >
           <SendIcon size={16} className="mr-2" />
           Get Answer
         </Button>
       </div>
 
-      {/* GA Topics Grid - Updated with card style like in the image */}
+      {/* GA Topics Grid */}
       <div className="mt-8">
-        <h3 className="text-sm font-medium text-slate-300 mb-4">Graded Assignment Topics:</h3>
+        <h3 className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} mb-4`}>Graded Assignment Topics:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {gaTopics.map((topic) => (
             <button
@@ -164,14 +177,24 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
               onClick={() => selectTopic(topic.id)}
               className={`p-4 rounded-lg transition-all text-left ${
                 selectedTopic === topic.id 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                : 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
+                  ? isDarkMode 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                    : 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                  : isDarkMode 
+                    ? 'bg-slate-800/70 text-slate-300 hover:bg-slate-700' 
+                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 shadow-sm'
               }`}
             >
-              <h4 className="text-lg font-medium text-blue-400 mb-2">
+              <h4 className={`text-lg font-medium ${
+                isDarkMode 
+                  ? selectedTopic === topic.id ? 'text-white' : 'text-blue-400'
+                  : selectedTopic === topic.id ? 'text-white' : 'text-blue-500'
+              } mb-2`}>
                 {topic.id}: {topic.name}
               </h4>
-              <p className="text-sm opacity-80">{topic.description}</p>
+              <p className={`text-sm ${
+                selectedTopic === topic.id ? 'opacity-90' : 'opacity-80'
+              }`}>{topic.description}</p>
             </button>
           ))}
         </div>
