@@ -76,7 +76,7 @@ export const gaTopics = [
 
 /**
  * Function to search for a matching question
- * Uses fuzzy matching to find the closest question match
+ * Uses improved fuzzy matching to find the closest question match
  */
 export function findMatchingAnswer(question: string): { answer: string; found: boolean } {
   // Convert to lowercase and trim for better matching
@@ -91,13 +91,28 @@ export function findMatchingAnswer(question: string): { answer: string; found: b
     return { answer: exactMatch.answer, found: true };
   }
   
+  // Try substring matching (if the question contains a significant part of a stored question)
+  for (const data of preTrainedData) {
+    const storedQuestion = data.question.toLowerCase().trim();
+    
+    // If the input question is a substantial part of a stored question
+    if (storedQuestion.includes(normalizedQuestion) && normalizedQuestion.length > 15) {
+      return { answer: data.answer, found: true };
+    }
+    
+    // If the stored question is a substantial part of the input question
+    if (normalizedQuestion.includes(storedQuestion) && storedQuestion.length > 15) {
+      return { answer: data.answer, found: true };
+    }
+  }
+  
   // Try fuzzy matching - checks if the input question contains key parts of any pre-trained question
   for (const data of preTrainedData) {
     // Create keywords from the stored question
     const keywords = data.question
       .toLowerCase()
       .split(' ')
-      .filter(word => word.length > 4) // Only use significant words
+      .filter(word => word.length > 3) // Only use significant words
       .map(word => word.replace(/[^a-z0-9]/g, '')); // Remove special characters
       
     // Count how many keywords match
@@ -105,8 +120,8 @@ export function findMatchingAnswer(question: string): { answer: string; found: b
       normalizedQuestion.includes(keyword)
     ).length;
     
-    // If more than 70% of keywords match, consider it a match
-    if (matchCount > 0 && matchCount / keywords.length > 0.7) {
+    // If more than 60% of keywords match, consider it a match (lowered threshold for better matching)
+    if (matchCount > 0 && matchCount / keywords.length > 0.6) {
       return { answer: data.answer, found: true };
     }
   }

@@ -96,19 +96,19 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Animated Text Section - Above the question input */}
-      <div className={`py-3 ${isDarkMode ? 'bg-slate-800/40' : 'bg-blue-100/80'} rounded-md overflow-hidden mb-6`}>
+      <div className={`py-3 ${isDarkMode ? 'bg-slate-800/40' : 'bg-blue-100'} rounded-md overflow-hidden mb-6`}>
         <div className="animate-marquee whitespace-nowrap">
-          <span className={isDarkMode ? "text-blue-400 mx-4" : "text-blue-600 mx-4"}>Welcome to TDS Solver</span>
-          <span className={isDarkMode ? "text-purple-400 mx-4" : "text-purple-600 mx-4"}>IIT Madras Online Degree</span>
-          <span className={isDarkMode ? "text-pink-400 mx-4" : "text-pink-600 mx-4"}>21f3001091@ds.study.iitm.ac.in</span>
-          <span className={isDarkMode ? "text-green-400 mx-4" : "text-green-600 mx-4"}>TDS Project 2</span>
-          <span className={isDarkMode ? "text-yellow-400 mx-4" : "text-yellow-600 mx-4"}>Tools in Data Science</span>
+          <span className={isDarkMode ? "text-blue-400 mx-4" : "text-blue-700 mx-4 font-medium"}>Welcome to TDS Solver</span>
+          <span className={isDarkMode ? "text-purple-400 mx-4" : "text-purple-700 mx-4 font-medium"}>IIT Madras Online Degree</span>
+          <span className={isDarkMode ? "text-pink-400 mx-4" : "text-pink-700 mx-4 font-medium"}>21f3001091@ds.study.iitm.ac.in</span>
+          <span className={isDarkMode ? "text-green-400 mx-4" : "text-green-700 mx-4 font-medium"}>TDS Project 2</span>
+          <span className={isDarkMode ? "text-yellow-400 mx-4" : "text-yellow-700 mx-4 font-medium"}>Tools in Data Science</span>
         </div>
       </div>
       
       <div>
         <label htmlFor="question" className={`block text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} mb-2 flex items-center`}>
-          <BookOpenIcon size={16} className={`mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+          <BookOpenIcon size={16} className={`mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
           Enter your TDS assignment question
         </label>
         <Textarea
@@ -117,7 +117,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           className={`min-h-60 ${
             isDarkMode 
               ? 'bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
-              : 'bg-white border-slate-300 placeholder-slate-400 text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              : 'bg-white border-slate-300 placeholder-slate-500 text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
           } transition-all`}
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -136,9 +136,9 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           <div className={`${
             isDarkMode 
               ? 'bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700/70' 
-              : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'
+              : 'bg-white border-blue-200 text-slate-700 hover:bg-slate-50'
           } border border-dashed rounded-md px-4 py-3 flex items-center gap-2 transition-colors`}>
-            <UploadIcon size={18} className={isDarkMode ? "text-blue-400" : "text-blue-500"} />
+            <UploadIcon size={18} className={isDarkMode ? "text-blue-400" : "text-blue-600"} />
             <span className="text-sm">{file ? file.name : 'Attach file (optional)'}</span>
           </div>
           {file && (
@@ -158,7 +158,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           className={`${
             isDarkMode 
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
-              : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
           } text-white transition-all shadow-lg hover:shadow-blue-900/20`}
         >
           <SendIcon size={16} className="mr-2" />
@@ -179,21 +179,21 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
                 selectedTopic === topic.id 
                   ? isDarkMode 
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                    : 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
                   : isDarkMode 
                     ? 'bg-slate-800/70 text-slate-300 hover:bg-slate-700' 
-                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 shadow-sm'
+                    : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm'
               }`}
             >
               <h4 className={`text-lg font-medium ${
                 isDarkMode 
                   ? selectedTopic === topic.id ? 'text-white' : 'text-blue-400'
-                  : selectedTopic === topic.id ? 'text-white' : 'text-blue-500'
+                  : selectedTopic === topic.id ? 'text-white' : 'text-blue-600'
               } mb-2`}>
                 {topic.id}: {topic.name}
               </h4>
               <p className={`text-sm ${
-                selectedTopic === topic.id ? 'opacity-90' : 'opacity-80'
+                selectedTopic === topic.id ? 'opacity-90' : isDarkMode ? 'opacity-80' : 'text-slate-600'
               }`}>{topic.description}</p>
             </button>
           ))}

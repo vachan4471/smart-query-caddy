@@ -1,4 +1,3 @@
-
 import { config, systemPrompt } from './config';
 import { findMatchingAnswer } from './preTrainedAnswers';
 

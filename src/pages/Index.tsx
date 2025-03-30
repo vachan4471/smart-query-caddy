@@ -63,7 +63,7 @@ const Index = () => {
 
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-white/90 border-slate-200 shadow-lg";
+    : "bg-white/90 border-slate-300 shadow-lg";
 
   return (
     <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-700'}`}>
@@ -86,20 +86,20 @@ const Index = () => {
           </div>
 
           <div className="mb-4 flex items-center justify-center">
-            <div className={`w-16 h-16 ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} rounded-full flex items-center justify-center mr-4`}>
+            <div className={`w-16 h-16 ${darkMode ? 'bg-blue-600' : 'bg-blue-600'} rounded-full flex items-center justify-center mr-4`}>
               <span className="text-2xl font-bold text-white">TDS</span>
             </div>
             <h1 className={`text-4xl md:text-5xl font-bold bg-clip-text text-transparent ${
-              darkMode ? 'bg-gradient-to-r from-blue-400 to-purple-500' : 'bg-gradient-to-r from-blue-500 to-purple-600'
+              darkMode ? 'bg-gradient-to-r from-blue-400 to-purple-500' : 'bg-gradient-to-r from-blue-600 to-purple-700'
             }`}>
               TDS Solver
             </h1>
           </div>
-          <p className={`text-xl ${darkMode ? 'text-slate-300' : 'text-slate-600'} max-w-2xl mx-auto`}>
+          <p className={`text-xl ${darkMode ? 'text-slate-300' : 'text-slate-700'} max-w-2xl mx-auto`}>
             Your AI assistant for Tools in Data Science assignments
           </p>
           <div className="mt-2 flex justify-center">
-            <span className={`px-3 py-1 ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} text-white text-xs rounded-full`}>
+            <span className={`px-3 py-1 ${darkMode ? 'bg-blue-600' : 'bg-blue-600'} text-white text-xs rounded-full`}>
               IIT Madras Online Degree Program
             </span>
           </div>
@@ -119,11 +119,11 @@ const Index = () => {
             {loading && (
               <div className="py-4 flex items-center justify-center space-x-2">
                 <div className="animate-pulse flex space-x-1">
-                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-500'}`}></div>
-                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} animate-delay-150`}></div>
-                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-500'} animate-delay-300`}></div>
+                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-600'}`}></div>
+                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-600'} animate-delay-150`}></div>
+                  <div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-blue-600' : 'bg-blue-600'} animate-delay-300`}></div>
                 </div>
-                <span className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-500'}`}>Processing your question...</span>
+                <span className={`text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Processing your question...</span>
               </div>
             )}
           </div>
@@ -137,12 +137,12 @@ const Index = () => {
           </div>
         </main>
 
-        <footer className={`mt-16 text-center ${darkMode ? 'text-slate-400' : 'text-slate-500'} text-sm`}>
+        <footer className={`mt-16 text-center ${darkMode ? 'text-slate-400' : 'text-slate-600'} text-sm`}>
           <p>IIT Madras Online Degree Program • {new Date().getFullYear()}</p>
           <p className="mt-2">
             <a 
               href="mailto:21f3001091@ds.study.iitm.ac.in"
-              className={`underline hover:text-blue-500 transition-colors ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}
+              className={`underline hover:text-blue-500 transition-colors ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}
             >
               21f3001091@ds.study.iitm.ac.in
             </a>
