@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
@@ -16,7 +15,6 @@ const Index = () => {
   const resultRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // Set API key if available in config
     if (config.staticApiKey) {
       window.VITE_OPENAI_API_KEY = config.staticApiKey;
     }
@@ -63,7 +61,7 @@ const Index = () => {
 
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-slate-100 border-slate-300 shadow-lg";
+    : "bg-slate-200/90 border-slate-300 shadow-xl rounded-xl transform hover:shadow-2xl transition-all duration-300";
 
   return (
     <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-700'}`}>
@@ -114,7 +112,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`max-w-4xl mx-auto ${cardBg} p-6 md:p-8 rounded-xl backdrop-blur-sm`}>
+        <main className={`max-w-4xl mx-auto ${cardBg} p-6 md:p-8 backdrop-blur-sm`}>
           <div className="mb-6">
             {loading && (
               <div className="py-4 flex items-center justify-center space-x-2">

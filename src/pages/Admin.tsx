@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +55,6 @@ const Admin = () => {
       document.documentElement.classList.remove('dark');
     }
     
-    // Check for authentication
     const isAuth = localStorage.getItem('admin_authenticated');
     if (isAuth === 'true') {
       setAuthenticated(true);
@@ -79,7 +77,6 @@ const Admin = () => {
   };
   
   const handleAuthenticate = () => {
-    // Simple authentication - in a real app this would be more secure
     if (password === '21f3001091') {
       setAuthenticated(true);
       setPasswordProtected(false);
@@ -99,22 +96,18 @@ const Admin = () => {
     addQAPair(question, answer, topic);
     toast.success('New Q&A pair added successfully!');
     
-    // Update local state
     setQaPairs([...qaPairs, { question, answer, topic }]);
     
-    // Clear form
     setQuestion('');
     setAnswer('');
   };
   
   const handleDeleteQA = (index: number) => {
-    // This is just for the UI - in a real app we'd delete from storage too
     const updatedPairs = [...qaPairs];
     updatedPairs.splice(index, 1);
     setQaPairs(updatedPairs);
     toast.info('Q&A pair removed');
     
-    // For localStorage too
     try {
       localStorage.setItem('preTrainedData', JSON.stringify(updatedPairs));
     } catch (error) {
@@ -128,7 +121,7 @@ const Admin = () => {
     
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-slate-100 border-slate-200";
+    : "bg-slate-200/90 border-slate-300 shadow-lg transform hover:shadow-xl transition-all duration-300";
   
   if (passwordProtected) {
     return (
@@ -146,7 +139,7 @@ const Admin = () => {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={darkMode ? "bg-slate-700 border-slate-600 text-white" : ""}
+                className={darkMode ? "bg-slate-700 border-slate-600 text-white" : "bg-white border-slate-300"}
               />
             </div>
           </CardContent>
@@ -207,7 +200,6 @@ const Admin = () => {
         </header>
         
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Add new Q&A form */}
           <Card className={`lg:col-span-1 ${cardBg}`}>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -263,7 +255,6 @@ const Admin = () => {
             </CardFooter>
           </Card>
           
-          {/* Q&A List */}
           <Card className={`lg:col-span-2 ${cardBg}`}>
             <CardHeader>
               <CardTitle className="flex items-center">
