@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
@@ -61,7 +62,7 @@ const Index = () => {
 
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-slate-200/90 border-slate-300 shadow-xl rounded-xl transform hover:shadow-2xl transition-all duration-300";
+    : "bg-slate-200/90 border-slate-300 shadow-xl rounded-xl transform hover:scale-[1.01] hover:shadow-2xl transition-all duration-300";
 
   return (
     <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-700'}`}>
