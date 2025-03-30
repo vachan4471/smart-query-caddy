@@ -63,7 +63,7 @@ const Index = () => {
 
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-white/90 border-slate-300 shadow-lg";
+    : "bg-slate-100 border-slate-300 shadow-lg";
 
   return (
     <div className={`min-h-screen ${bgGradient} transition-colors duration-300 ${darkMode ? 'text-white' : 'text-slate-700'}`}>

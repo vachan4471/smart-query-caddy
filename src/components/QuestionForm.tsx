@@ -96,7 +96,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Animated Text Section - Above the question input */}
-      <div className={`py-3 ${isDarkMode ? 'bg-slate-800/40' : 'bg-blue-100'} rounded-md overflow-hidden mb-6`}>
+      <div className={`py-3 ${isDarkMode ? 'bg-slate-900/80' : 'bg-blue-100'} rounded-md overflow-hidden mb-6`}>
         <div className="animate-marquee whitespace-nowrap">
           <span className={isDarkMode ? "text-blue-400 mx-4" : "text-blue-700 mx-4 font-medium"}>Welcome to TDS Solver</span>
           <span className={isDarkMode ? "text-purple-400 mx-4" : "text-purple-700 mx-4 font-medium"}>IIT Madras Online Degree</span>
@@ -107,7 +107,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
       </div>
       
       <div>
-        <label htmlFor="question" className={`block text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} mb-2 flex items-center`}>
+        <label htmlFor="question" className={`block text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-700'} mb-2 flex items-center`}>
           <BookOpenIcon size={16} className={`mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
           Enter your TDS assignment question
         </label>
@@ -116,7 +116,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           placeholder="Type or paste your question here..."
           className={`min-h-60 ${
             isDarkMode 
-              ? 'bg-slate-700/50 border-slate-600 placeholder-slate-400 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
+              ? 'bg-slate-800 border-slate-700 placeholder-slate-400 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
               : 'bg-white border-slate-300 placeholder-slate-500 text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
           } transition-all`}
           value={question}
@@ -135,7 +135,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           />
           <div className={`${
             isDarkMode 
-              ? 'bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700/70' 
+              ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
               : 'bg-white border-blue-200 text-slate-700 hover:bg-slate-50'
           } border border-dashed rounded-md px-4 py-3 flex items-center gap-2 transition-colors`}>
             <UploadIcon size={18} className={isDarkMode ? "text-blue-400" : "text-blue-600"} />
@@ -168,7 +168,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
 
       {/* GA Topics Grid */}
       <div className="mt-8">
-        <h3 className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} mb-4`}>Graded Assignment Topics:</h3>
+        <h3 className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-700'} mb-4`}>Graded Assignment Topics:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {gaTopics.map((topic) => (
             <button
@@ -181,7 +181,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
                     : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
                   : isDarkMode 
-                    ? 'bg-slate-800/70 text-slate-300 hover:bg-slate-700' 
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
                     : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm'
               }`}
             >

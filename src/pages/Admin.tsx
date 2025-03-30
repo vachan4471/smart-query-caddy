@@ -128,7 +128,7 @@ const Admin = () => {
     
   const cardBg = darkMode 
     ? "bg-slate-800/50 border-slate-700" 
-    : "bg-white/80 border-slate-200";
+    : "bg-slate-100 border-slate-200";
   
   if (passwordProtected) {
     return (
@@ -146,7 +146,7 @@ const Admin = () => {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={darkMode ? "bg-slate-700/50 border-slate-600 text-white" : ""}
+                className={darkMode ? "bg-slate-700 border-slate-600 text-white" : ""}
               />
             </div>
           </CardContent>
