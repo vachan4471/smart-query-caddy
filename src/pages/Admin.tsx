@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,25 +26,33 @@ import {
   CheckCircleIcon, 
   MoonIcon, 
   PlusIcon, 
+  RefreshCwIcon,
   SaveIcon, 
   SunIcon, 
   TrashIcon 
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
-import { gaTopics, addQAPair, preTrainedData } from '@/utils/preTrainedAnswers';
+import { 
+  gaTopics, 
+  addQAPair, 
+  deleteQAPair, 
+  resetQADatabase,
+  getAllQAPairs
+} from '@/utils/preTrainedAnswers';
 
 const Admin = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [topic, setTopic] = useState('GA1');
-  const [qaPairs, setQaPairs] = useState(preTrainedData);
+  const [qaPairs, setQaPairs] = useState(getAllQAPairs());
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [passwordProtected, setPasswordProtected] = useState(true);
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   
   useEffect(() => {
+    // Load theme preference
     const savedTheme = localStorage.getItem('theme_preference');
     if (savedTheme) {
       setDarkMode(savedTheme === 'dark');
@@ -55,11 +64,15 @@ const Admin = () => {
       document.documentElement.classList.remove('dark');
     }
     
+    // Check authentication
     const isAuth = localStorage.getItem('admin_authenticated');
     if (isAuth === 'true') {
       setAuthenticated(true);
       setPasswordProtected(false);
     }
+    
+    // Load the latest Q&A pairs
+    setQaPairs(getAllQAPairs());
   }, []);
   
   useEffect(() => {
@@ -96,22 +109,29 @@ const Admin = () => {
     addQAPair(question, answer, topic);
     toast.success('New Q&A pair added successfully!');
     
-    setQaPairs([...qaPairs, { question, answer, topic }]);
+    // Refresh the list from storage
+    setQaPairs(getAllQAPairs());
     
+    // Clear the form
     setQuestion('');
     setAnswer('');
   };
   
   const handleDeleteQA = (index: number) => {
-    const updatedPairs = [...qaPairs];
-    updatedPairs.splice(index, 1);
-    setQaPairs(updatedPairs);
-    toast.info('Q&A pair removed');
-    
-    try {
-      localStorage.setItem('preTrainedData', JSON.stringify(updatedPairs));
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
+    if (deleteQAPair(index)) {
+      toast.info('Q&A pair removed');
+      // Refresh the list from storage
+      setQaPairs(getAllQAPairs());
+    } else {
+      toast.error('Failed to remove Q&A pair');
+    }
+  };
+  
+  const handleResetDatabase = () => {
+    if (confirm('Are you sure you want to reset the database to its initial state? This cannot be undone.')) {
+      resetQADatabase();
+      setQaPairs(getAllQAPairs());
+      toast.success('Database reset to initial values');
     }
   };
   
@@ -247,10 +267,14 @@ const Admin = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col space-y-2">
               <Button onClick={handleAddQA} className="w-full">
                 <SaveIcon size={16} className="mr-2" />
                 Save Q&A Pair
+              </Button>
+              <Button onClick={handleResetDatabase} variant="outline" className="w-full text-yellow-500 hover:text-yellow-600">
+                <RefreshCwIcon size={16} className="mr-2" />
+                Reset Database
               </Button>
             </CardFooter>
           </Card>

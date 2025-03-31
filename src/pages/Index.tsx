@@ -8,6 +8,7 @@ import { config } from '@/utils/config';
 import { MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
+import { getAllQAPairs } from '@/utils/preTrainedAnswers';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
@@ -32,11 +33,9 @@ const Index = () => {
     }
     
     try {
-      const savedQAPairs = localStorage.getItem('preTrainedData');
-      if (savedQAPairs) {
-        const pairs = JSON.parse(savedQAPairs);
-        console.log(`Loaded ${pairs.length} Q&A pairs from localStorage`);
-      }
+      // Load from improved storage system
+      const qaPairs = getAllQAPairs();
+      console.log(`Loaded ${qaPairs.length} Q&A pairs from storage`);
     } catch (error) {
       console.error('Error loading Q&A pairs:', error);
     }

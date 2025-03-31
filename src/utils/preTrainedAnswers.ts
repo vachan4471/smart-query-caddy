@@ -10,7 +10,8 @@ interface QuestionAnswer {
   topic: string;
 }
 
-export const preTrainedData: QuestionAnswer[] = [
+// Initial static dataset
+const initialPreTrainedData: QuestionAnswer[] = [
   {
     question: "Running uv run --with httpie -- https [URL] installs the Python package httpie and sends a HTTPS request to the URL. Send a HTTPS request to https://httpbin.org/get with the URL encoded parameter email set to 21f3001091@ds.study.iitm.ac.in What is the JSON output of the command?",
     answer: '{\n  "args": {\n    "email": "21f3001091@ds.study.iitm.ac.in"\n  },\n  "headers": {\n    "Accept": "*/*",\n    "Accept-Encoding": "gzip, deflate",\n    "Host": "httpbin.org",\n    "User-Agent": "HTTPie/3.2.2",\n    "X-Amzn-Trace-Id": "Root=1-65f3a8b6-61e2b7c73f7b9fbe6e62ff6b"\n  },\n  "origin": "49.207.203.53",\n  "url": "https://httpbin.org/get?email=21f3001091%40ds.study.iitm.ac.in"\n}',
@@ -36,14 +37,33 @@ export const preTrainedData: QuestionAnswer[] = [
     answer: '[{"name":"Nora","age":4},{"name":"Ivy","age":11},{"name":"David","age":14},{"name":"Karen","age":21},{"name":"Liam","age":21},{"name":"Charlie","age":27},{"name":"Alice","age":35},{"name":"Grace","age":41},{"name":"Henry","age":62},{"name":"Oscar","age":62},{"name":"Jack","age":64},{"name":"Bob","age":68},{"name":"Frank","age":70},{"name":"Paul","age":77},{"name":"Mary","age":89},{"name":"Emma","age":94}]',
     topic: "GA3"
   },
-  // Add your additional questions here following the same format
-  // Example:
-  // {
-  //   question: "Your question text here...",
-  //   answer: "Your answer text here...",
-  //   topic: "GA1" // Choose from GA1, GA2, GA3, GA4, GA5
-  // },
 ];
+
+// Function to load data from storage
+function loadStoredData(): QuestionAnswer[] {
+  try {
+    const storedData = localStorage.getItem('tdsQAPairs');
+    if (storedData) {
+      return JSON.parse(storedData);
+    }
+  } catch (error) {
+    console.error('Error loading stored Q&A pairs:', error);
+  }
+  return [...initialPreTrainedData]; // Return copy of initial data if no stored data
+}
+
+// Initialize with stored data or fallback to initial data
+export let preTrainedData: QuestionAnswer[] = loadStoredData();
+
+// Function to save current data to storage
+function saveDataToStorage() {
+  try {
+    localStorage.setItem('tdsQAPairs', JSON.stringify(preTrainedData));
+    console.log(`Saved ${preTrainedData.length} Q&A pairs to localStorage`);
+  } catch (error) {
+    console.error('Error saving Q&A pairs to localStorage:', error);
+  }
+}
 
 // Updated Topics with detailed descriptions based on user's provided content
 export const gaTopics = [
@@ -131,46 +151,68 @@ export function findMatchingAnswer(question: string): { answer: string; found: b
 
 /**
  * Function to add a new question and answer pair to the database
- * To add more questions, follow these steps:
- * 1. Copy the addQAPair export from this file
- * 2. Open the browser console (F12 in most browsers)
- * 3. Paste and execute the following code template for each Q&A pair:
- * 
- * window.addQAPair(
- *   "Your full question text here", 
- *   "Your full answer text here",
- *   "GA1" // Use GA1, GA2, GA3, GA4, or GA5 based on the topic
- * );
- * 
- * 4. The question will be added to localStorage for this session
- * 5. For permanent storage, copy the code back to this file inside the preTrainedData array
  */
 export function addQAPair(question: string, answer: string, topic: string = "GA1"): void {
   const newPair = { question, answer, topic };
   
-  // In a real application, this would save to a database
-  // For now, we'll just push to the array in memory (for demonstration purposes)
+  // Add to the in-memory array
   preTrainedData.push(newPair);
   
-  // In a real app, you might want to save to localStorage as well
-  try {
-    const currentData = JSON.parse(localStorage.getItem('preTrainedData') || '[]');
-    currentData.push(newPair);
-    localStorage.setItem('preTrainedData', JSON.stringify(currentData));
-    console.log('Added new Q&A pair to localStorage:', newPair);
-  } catch (error) {
-    console.error('Failed to save to localStorage:', error);
+  // Save to localStorage for persistence
+  saveDataToStorage();
+  
+  console.log('Added new Q&A pair:', newPair);
+}
+
+/**
+ * Function to delete a question and answer pair from the database
+ */
+export function deleteQAPair(index: number): boolean {
+  if (index < 0 || index >= preTrainedData.length) {
+    console.error('Invalid index for deletion:', index);
+    return false;
   }
+  
+  // Remove from the in-memory array
+  preTrainedData.splice(index, 1);
+  
+  // Save to localStorage for persistence
+  saveDataToStorage();
+  
+  console.log('Deleted Q&A pair at index:', index);
+  return true;
+}
+
+/**
+ * Function to reset the database to initial values
+ */
+export function resetQADatabase(): void {
+  preTrainedData = [...initialPreTrainedData];
+  saveDataToStorage();
+  console.log('Reset Q&A database to initial values');
+}
+
+/**
+ * Function to get all Q&A pairs
+ */
+export function getAllQAPairs(): QuestionAnswer[] {
+  return [...preTrainedData]; // Return a copy to prevent accidental mutations
 }
 
 // Add to the global window object for easy console access
 declare global {
   interface Window {
     addQAPair: typeof addQAPair;
+    deleteQAPair: typeof deleteQAPair;
+    resetQADatabase: typeof resetQADatabase;
+    getAllQAPairs: typeof getAllQAPairs;
   }
 }
 
-// Make it accessible from the browser console
+// Make functions accessible from the browser console
 if (typeof window !== 'undefined') {
   window.addQAPair = addQAPair;
+  window.deleteQAPair = deleteQAPair;
+  window.resetQADatabase = resetQADatabase;
+  window.getAllQAPairs = getAllQAPairs;
 }
