@@ -1,10 +1,11 @@
-
 /**
  * Pre-trained answers for common TDS questions
  * This database can be expanded with more Q&A pairs
  */
 
-interface QuestionAnswer {
+import { saveQAPairsToGist } from './gistStorage';
+
+export interface QuestionAnswer {
   question: string;
   answer: string;
   topic: string;
@@ -39,6 +40,9 @@ const initialPreTrainedData: QuestionAnswer[] = [
   },
 ];
 
+// Initially load from localStorage, will be updated by initializeQADatabase
+export let preTrainedData: QuestionAnswer[] = loadStoredData();
+
 // Function to load data from storage
 function loadStoredData(): QuestionAnswer[] {
   try {
@@ -52,16 +56,22 @@ function loadStoredData(): QuestionAnswer[] {
   return [...initialPreTrainedData]; // Return copy of initial data if no stored data
 }
 
-// Initialize with stored data or fallback to initial data
-export let preTrainedData: QuestionAnswer[] = loadStoredData();
-
-// Function to save current data to storage
-function saveDataToStorage() {
+// Function to save current data to storage (both local and cloud)
+export function saveDataToStorage() {
   try {
+    // Save to localStorage for immediate access
     localStorage.setItem('tdsQAPairs', JSON.stringify(preTrainedData));
     console.log(`Saved ${preTrainedData.length} Q&A pairs to localStorage`);
+    
+    // Also save to cloud storage (GitHub Gist)
+    saveQAPairsToGist(preTrainedData)
+      .then(success => {
+        if (success) {
+          console.log(`Synced ${preTrainedData.length} Q&A pairs to cloud storage`);
+        }
+      });
   } catch (error) {
-    console.error('Error saving Q&A pairs to localStorage:', error);
+    console.error('Error saving Q&A pairs:', error);
   }
 }
 
@@ -183,7 +193,7 @@ export function addQAPair(question: string, answer: string, topic: string = "GA1
   // Add to the in-memory array
   preTrainedData.push(newPair);
   
-  // Save to localStorage for persistence
+  // Save to localStorage and cloud storage for persistence
   saveDataToStorage();
   
   console.log('Added new Q&A pair:', newPair);
@@ -201,7 +211,7 @@ export function deleteQAPair(index: number): boolean {
   // Remove from the in-memory array
   preTrainedData.splice(index, 1);
   
-  // Save to localStorage for persistence
+  // Save to localStorage and cloud storage for persistence
   saveDataToStorage();
   
   console.log('Deleted Q&A pair at index:', index);
@@ -222,6 +232,14 @@ export function resetQADatabase(): void {
  */
 export function getAllQAPairs(): QuestionAnswer[] {
   return [...preTrainedData]; // Return a copy to prevent accidental mutations
+}
+
+/**
+ * Function to update preTrainedData with external data
+ * Used when loading from cloud storage
+ */
+export function updatePreTrainedData(data: QuestionAnswer[]): void {
+  preTrainedData = [...data];
 }
 
 // Add to the global window object for easy console access

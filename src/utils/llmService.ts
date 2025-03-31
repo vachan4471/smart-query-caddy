@@ -1,5 +1,6 @@
 import { config, systemPrompt } from './config';
 import { findMatchingAnswer } from './preTrainedAnswers';
+import { initializeQADatabase } from './gistStorage';
 
 /**
  * Service for interacting with LLM APIs and pre-trained answers
@@ -18,7 +19,15 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
     });
   }
 
-  // First, check if we have a pre-trained answer
+  // Make sure we have the latest data from cloud storage
+  try {
+    await initializeQADatabase();
+  } catch (error) {
+    console.error('Failed to refresh Q&A database from cloud:', error);
+    // Continue with local data if cloud sync fails
+  }
+
+  // Check if we have a pre-trained answer
   const { answer, found } = findMatchingAnswer(question);
   if (found) {
     console.log('Found pre-trained answer');

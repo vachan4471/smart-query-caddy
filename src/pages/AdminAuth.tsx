@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LockIcon, KeyIcon } from 'lucide-react';
+import { initializeQADatabase } from '@/utils/gistStorage';
+import { updatePreTrainedData } from '@/utils/preTrainedAnswers';
 
 const AdminAuth = () => {
   const [password, setPassword] = useState('');
@@ -12,13 +14,23 @@ const AdminAuth = () => {
   const navigate = useNavigate();
   const isDarkMode = document.documentElement.classList.contains('dark');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     // Check password (hardcoded as per requirement)
     if (password === '21f3001091') {
       localStorage.setItem('admin_authenticated', 'true');
+      
+      // Sync with cloud database to ensure admin has the latest data
+      try {
+        const cloudData = await initializeQADatabase();
+        updatePreTrainedData(cloudData);
+        console.log(`Admin: Synced ${cloudData.length} Q&A pairs from cloud storage`);
+      } catch (error) {
+        console.error('Error syncing with cloud storage:', error);
+      }
+      
       toast.success('Admin access granted');
       navigate('/admin');
     } else {

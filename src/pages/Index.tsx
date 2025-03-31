@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
@@ -7,7 +8,8 @@ import { config } from '@/utils/config';
 import { MoonIcon, SunIcon, PlusIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
-import { getAllQAPairs } from '@/utils/preTrainedAnswers';
+import { getAllQAPairs, updatePreTrainedData } from '@/utils/preTrainedAnswers';
+import { initializeQADatabase } from '@/utils/gistStorage';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
@@ -15,6 +17,7 @@ const Index = () => {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const resultRef = useRef<HTMLDivElement>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [dataInitialized, setDataInitialized] = useState<boolean>(false);
   
   useEffect(() => {
     if (config.staticApiKey) {
@@ -36,14 +39,23 @@ const Index = () => {
     const isAuthenticated = localStorage.getItem('admin_authenticated');
     setIsAdmin(isAuthenticated === 'true');
     
-    try {
-      // Load from improved storage system
-      const qaPairs = getAllQAPairs();
-      console.log(`Loaded ${qaPairs.length} Q&A pairs from storage`);
-    } catch (error) {
-      console.error('Error loading Q&A pairs:', error);
+    // Initialize Q&A database from cloud storage
+    if (!dataInitialized) {
+      const loadData = async () => {
+        try {
+          const cloudData = await initializeQADatabase();
+          updatePreTrainedData(cloudData);
+          console.log(`Loaded ${cloudData.length} Q&A pairs from storage`);
+          setDataInitialized(true);
+        } catch (error) {
+          console.error('Error initializing Q&A database:', error);
+          toast.error('Failed to load Q&A database');
+        }
+      };
+      
+      loadData();
     }
-  }, []);
+  }, [darkMode, dataInitialized]);
   
   useEffect(() => {
     if (darkMode) {
