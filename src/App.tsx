@@ -7,13 +7,14 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import AdminAuth from "./pages/AdminAuth";
 
 const queryClient = new QueryClient();
 
 // Auth guard for admin routes
 const AdminRoute = () => {
   const isAdmin = localStorage.getItem('admin_authenticated') === 'true';
-  return isAdmin ? <Admin /> : <Navigate to="/" replace />;
+  return isAdmin ? <Admin /> : <AdminAuth />;
 };
 
 const App = () => (

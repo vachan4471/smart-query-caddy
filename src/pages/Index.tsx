@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import QuestionForm from '@/components/QuestionForm';
 import ResultDisplay from '@/components/ResultDisplay';
@@ -144,18 +143,15 @@ const Index = () => {
         </footer>
       </div>
       
-      {/* Floating action button for admin access - only visible to admins */}
-      {isAdmin && (
-        <Link 
-          to="/admin" 
-          className={`fixed bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all z-50 ${
-            darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-          aria-label="Admin access"
-        >
-          <PlusIcon className="text-white" size={24} />
-        </Link>
-      )}
+      <Link 
+        to="/admin" 
+        className={`fixed bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all z-50 ${
+          darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'
+        }`}
+        aria-label="Admin access"
+      >
+        <PlusIcon className="text-white" size={24} />
+      </Link>
     </div>
   );
 };
