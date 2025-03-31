@@ -5,7 +5,7 @@ import ResultDisplay from '@/components/ResultDisplay';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { config } from '@/utils/config';
-import { MoonIcon, SunIcon, PlusCircleIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, PlusIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import { getAllQAPairs } from '@/utils/preTrainedAnswers';
@@ -106,17 +106,6 @@ const Index = () => {
               IIT Madras Online Degree Program
             </span>
           </div>
-          
-          {isAdmin && (
-            <div className="absolute top-0 left-0">
-              <Link to="/admin" className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
-                darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
-              } transition-colors ${darkMode ? 'text-white' : 'text-slate-700'}`}>
-                <PlusCircleIcon size={14} />
-                <span>Admin</span>
-              </Link>
-            </div>
-          )}
         </header>
 
         <main className={`max-w-4xl mx-auto ${cardBg} p-6 md:p-8 backdrop-blur-sm`}>
@@ -154,6 +143,19 @@ const Index = () => {
           </p>
         </footer>
       </div>
+      
+      {/* Floating action button for admin access - only visible to admins */}
+      {isAdmin && (
+        <Link 
+          to="/admin" 
+          className={`fixed bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all z-50 ${
+            darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+          aria-label="Admin access"
+        >
+          <PlusIcon className="text-white" size={24} />
+        </Link>
+      )}
     </div>
   );
 };
