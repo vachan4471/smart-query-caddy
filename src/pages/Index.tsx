@@ -15,6 +15,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const resultRef = useRef<HTMLDivElement>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   
   useEffect(() => {
     if (config.staticApiKey) {
@@ -31,6 +32,10 @@ const Index = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Check if user is admin
+    const isAuthenticated = localStorage.getItem('admin_authenticated');
+    setIsAdmin(isAuthenticated === 'true');
     
     try {
       // Load from improved storage system
@@ -102,14 +107,16 @@ const Index = () => {
             </span>
           </div>
           
-          <div className="absolute top-0 left-0">
-            <Link to="/admin" className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
-              darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
-            } transition-colors ${darkMode ? 'text-white' : 'text-slate-700'}`}>
-              <PlusCircleIcon size={14} />
-              <span>Admin</span>
-            </Link>
-          </div>
+          {isAdmin && (
+            <div className="absolute top-0 left-0">
+              <Link to="/admin" className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs ${
+                darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-slate-200 hover:bg-slate-300'
+              } transition-colors ${darkMode ? 'text-white' : 'text-slate-700'}`}>
+                <PlusCircleIcon size={14} />
+                <span>Admin</span>
+              </Link>
+            </div>
+          )}
         </header>
 
         <main className={`max-w-4xl mx-auto ${cardBg} p-6 md:p-8 backdrop-blur-sm`}>
