@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +23,8 @@ import {
   ArrowLeftIcon, 
   BookOpenIcon, 
   CheckCircleIcon, 
+  CloudIcon,
+  DatabaseIcon,
   MoonIcon, 
   PlusIcon, 
   RefreshCwIcon,
@@ -38,8 +39,10 @@ import {
   addQAPair, 
   deleteQAPair, 
   resetQADatabase,
-  getAllQAPairs
+  getAllQAPairs,
+  saveDataToStorage
 } from '@/utils/preTrainedAnswers';
+import { saveQAPairsToGist, createInitialGist } from '@/utils/gistStorage';
 
 const Admin = () => {
   const [question, setQuestion] = useState('');
@@ -50,6 +53,7 @@ const Admin = () => {
   const [passwordProtected, setPasswordProtected] = useState(true);
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     // Load theme preference
@@ -100,38 +104,114 @@ const Admin = () => {
     }
   };
   
-  const handleAddQA = () => {
+  const handleAddQA = async () => {
     if (!question.trim() || !answer.trim()) {
       toast.error('Question and answer are required');
       return;
     }
     
-    addQAPair(question, answer, topic);
-    toast.success('New Q&A pair added successfully!');
+    setIsLoading(true);
     
-    // Refresh the list from storage
-    setQaPairs(getAllQAPairs());
-    
-    // Clear the form
-    setQuestion('');
-    setAnswer('');
-  };
-  
-  const handleDeleteQA = (index: number) => {
-    if (deleteQAPair(index)) {
-      toast.info('Q&A pair removed');
+    try {
+      // First make sure we have write access to cloud storage
+      const testAccess = await saveQAPairsToGist(getAllQAPairs());
+      
+      if (!testAccess) {
+        // If cloud save fails, try creating the gist first
+        const gistCreated = await createInitialGist();
+        if (!gistCreated) {
+          const proceed = confirm("Unable to save to cloud storage. Continue saving locally only?");
+          if (!proceed) {
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+      
+      // Add the Q&A pair and save to storage
+      addQAPair(question, answer, topic);
+      toast.success('New Q&A pair added successfully!');
+      
       // Refresh the list from storage
       setQaPairs(getAllQAPairs());
-    } else {
-      toast.error('Failed to remove Q&A pair');
+      
+      // Clear the form
+      setQuestion('');
+      setAnswer('');
+    } catch (error) {
+      console.error('Error adding Q&A pair:', error);
+      toast.error('Failed to add Q&A pair. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  const handleResetDatabase = () => {
+  const handleDeleteQA = async (index: number) => {
+    setIsLoading(true);
+    
+    try {
+      if (deleteQAPair(index)) {
+        // After deleting locally, sync with cloud
+        const cloudSync = await saveQAPairsToGist(getAllQAPairs());
+        if (cloudSync) {
+          toast.success('Q&A pair removed from both local and cloud storage');
+        } else {
+          toast.warning('Q&A pair removed from local storage only. Cloud sync failed.');
+        }
+        
+        // Refresh the list from storage
+        setQaPairs(getAllQAPairs());
+      } else {
+        toast.error('Failed to remove Q&A pair');
+      }
+    } catch (error) {
+      console.error('Error deleting Q&A pair:', error);
+      toast.error('Error occurred while deleting. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleResetDatabase = async () => {
     if (confirm('Are you sure you want to reset the database to its initial state? This cannot be undone.')) {
-      resetQADatabase();
-      setQaPairs(getAllQAPairs());
-      toast.success('Database reset to initial values');
+      setIsLoading(true);
+      
+      try {
+        resetQADatabase();
+        
+        // After resetting locally, sync with cloud
+        const cloudSync = await saveQAPairsToGist(getAllQAPairs());
+        if (cloudSync) {
+          toast.success('Database reset and synced with cloud storage');
+        } else {
+          toast.warning('Database reset locally, but cloud sync failed');
+        }
+        
+        setQaPairs(getAllQAPairs());
+      } catch (error) {
+        console.error('Error resetting database:', error);
+        toast.error('Error occurred while resetting. Some operations may not have completed.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  
+  const handleForceCloudSync = async () => {
+    setIsLoading(true);
+    
+    try {
+      const cloudSync = await saveQAPairsToGist(getAllQAPairs());
+      if (cloudSync) {
+        toast.success('Successfully synced with cloud storage');
+      } else {
+        toast.error('Failed to sync with cloud storage');
+      }
+    } catch (error) {
+      console.error('Error syncing with cloud:', error);
+      toast.error('Error occurred during cloud sync');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -217,6 +297,19 @@ const Admin = () => {
           <p className={`text-xl ${darkMode ? 'text-slate-300' : 'text-slate-700'} max-w-2xl mx-auto`}>
             Manage pre-trained questions and answers
           </p>
+          
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleForceCloudSync}
+              disabled={isLoading}
+              className={`text-xs ${darkMode ? 'bg-slate-800 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-600 border-blue-200'}`}
+            >
+              <CloudIcon size={14} className="mr-1" />
+              {isLoading ? 'Syncing...' : 'Force Cloud Sync'}
+            </Button>
+          </div>
         </header>
         
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -268,11 +361,20 @@ const Admin = () => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
-              <Button onClick={handleAddQA} className="w-full">
+              <Button 
+                onClick={handleAddQA} 
+                className="w-full"
+                disabled={isLoading}
+              >
                 <SaveIcon size={16} className="mr-2" />
-                Save Q&A Pair
+                {isLoading ? 'Saving...' : 'Save Q&A Pair'}
               </Button>
-              <Button onClick={handleResetDatabase} variant="outline" className="w-full text-yellow-500 hover:text-yellow-600">
+              <Button 
+                onClick={handleResetDatabase} 
+                variant="outline" 
+                className="w-full text-yellow-500 hover:text-yellow-600"
+                disabled={isLoading}
+              >
                 <RefreshCwIcon size={16} className="mr-2" />
                 Reset Database
               </Button>
@@ -306,6 +408,7 @@ const Admin = () => {
                         variant="ghost" 
                         size="sm" 
                         onClick={() => handleDeleteQA(index)}
+                        disabled={isLoading}
                         className="h-6 w-6 p-0 text-red-400 hover:text-red-500 hover:bg-red-600/10"
                       >
                         <TrashIcon size={14} />

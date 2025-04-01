@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LockIcon, KeyIcon } from 'lucide-react';
-import { initializeQADatabase, saveQAPairsToGist } from '@/utils/gistStorage';
+import { initializeQADatabase, saveQAPairsToGist, createInitialGist } from '@/utils/gistStorage';
 import { updatePreTrainedData, getAllQAPairs } from '@/utils/preTrainedAnswers';
 
 const AdminAuth = () => {
@@ -25,6 +25,14 @@ const AdminAuth = () => {
       // Sync with cloud database to ensure admin has the latest data
       try {
         toast.info('Syncing with cloud database...');
+        
+        // First check if we can create a gist if needed
+        const testGistCreation = await createInitialGist();
+        if (!testGistCreation) {
+          toast.warning('Unable to create cloud storage. Cloud features may be limited.');
+        }
+        
+        // Now try to initialize the database
         const cloudData = await initializeQADatabase();
         updatePreTrainedData(cloudData);
         console.log(`Admin: Synced ${cloudData.length} Q&A pairs from cloud storage`);

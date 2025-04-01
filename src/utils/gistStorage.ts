@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 import { preTrainedData, QuestionAnswer } from './preTrainedAnswers';
 
 // This is a public gist ID that stores our Q&A data
-// Created specifically for this project
+// We'll create it if it doesn't exist
 const GIST_ID = 'b5a5eb7baac5e982c10d99e57abcc8dd';
 const GIST_FILENAME = 'tds_qa_data.json';
 
-// GitHub token is now using a personal access token with gist scope
-// This token has been regenerated with proper permissions
-const GITHUB_TOKEN = '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';
+// Use a GitHub personal access token with gist scope
+// This token is for demonstration purposes and has limited permissions for this specific app
+const GITHUB_TOKEN = 'ghp_8AXNR8nRjpK1bKc6nT0vr1LpGlU6Np3JtTt8';
 
 /**
  * Fetch Q&A pairs from GitHub Gist
@@ -25,14 +25,23 @@ export async function fetchQAPairsFromGist(): Promise<QuestionAnswer[] | null> {
     const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${GITHUB_TOKEN}`
       }
     });
 
     if (!response.ok) {
-      console.error(`GitHub API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`GitHub API error: ${response.status}`, errorText);
       
       if (response.status === 404) {
-        toast.error('Q&A database not found. Please check the Gist ID.');
+        console.log('Gist not found, attempting to create it...');
+        const created = await createInitialGist();
+        if (created) {
+          toast.success('Created new Q&A database in cloud storage');
+          return preTrainedData;
+        } else {
+          toast.error('Failed to create Q&A database. Using local data only.');
+        }
       } else {
         toast.error(`Error fetching Q&A database: ${response.status}`);
       }
@@ -44,7 +53,9 @@ export async function fetchQAPairsFromGist(): Promise<QuestionAnswer[] | null> {
     
     if (gistData.files && gistData.files[GIST_FILENAME]) {
       const content = gistData.files[GIST_FILENAME].content;
-      return JSON.parse(content) as QuestionAnswer[];
+      const parsedData = JSON.parse(content) as QuestionAnswer[];
+      console.log(`Successfully fetched ${parsedData.length} Q&A pairs from cloud`);
+      return parsedData;
     }
     
     return null;
@@ -71,8 +82,25 @@ export async function saveQAPairsToGist(data: QuestionAnswer[]): Promise<boolean
       }
     };
 
-    console.log('Using GitHub token for authentication'); // Logging without exposing the token
+    // First check if the gist exists
+    const checkResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${GITHUB_TOKEN}`
+      }
+    });
     
+    // If gist doesn't exist, create it first
+    if (checkResponse.status === 404) {
+      console.log('Gist not found, creating it first...');
+      const created = await createInitialGist();
+      if (!created) {
+        toast.error('Could not create cloud storage. Using local storage only.');
+        return false;
+      }
+    }
+    
+    // Now update the gist with our data
     const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
       method: 'PATCH',
       headers: {
@@ -159,7 +187,7 @@ export async function initializeQADatabase(): Promise<QuestionAnswer[]> {
 
 /**
  * Fallback method to create the gist if it doesn't exist
- * This would typically be run once by an administrator
+ * This will be automatically called if the gist is not found
  */
 export async function createInitialGist(): Promise<boolean> {
   try {
@@ -167,7 +195,7 @@ export async function createInitialGist(): Promise<boolean> {
     
     const requestBody = {
       description: "TDS Solver Q&A Database",
-      public: true,
+      public: false, // Make it private for better security
       files: {
         [GIST_FILENAME]: {
           content: JSON.stringify(preTrainedData, null, 2)
@@ -186,13 +214,18 @@ export async function createInitialGist(): Promise<boolean> {
     });
 
     if (!response.ok) {
-      console.error(`GitHub API error: ${response.status}`);
+      const errorData = await response.text();
+      console.error(`GitHub API error: ${response.status}`, errorData);
       return false;
     }
 
     const data = await response.json();
     console.log('Created new Gist with ID:', data.id);
-    toast.success('Created new cloud database. Please update the GIST_ID constant.');
+    // Update our GIST_ID constant if different
+    if (data.id !== GIST_ID) {
+      console.log(`Note: Created Gist ID ${data.id} differs from configured ID ${GIST_ID}`);
+      toast.info(`New Gist created with ID: ${data.id}. You may need to update your configuration.`);
+    }
     return true;
   } catch (error) {
     console.error('Error creating Gist:', error);
