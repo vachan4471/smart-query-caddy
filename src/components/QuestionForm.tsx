@@ -1,9 +1,8 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { SendIcon, UploadIcon, XIcon, BookOpenIcon } from 'lucide-react';
+import { SendIcon, UploadIcon, XIcon, BookOpenIcon, CloudIcon } from 'lucide-react';
 import { gaTopics } from '@/utils/preTrainedAnswers';
 
 interface QuestionFormProps {
@@ -16,8 +15,31 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
   const [question, setQuestion] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [checkingServer, setCheckingServer] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDarkMode = document.documentElement.classList.contains('dark');
+
+  useEffect(() => {
+    const checkForServerData = async () => {
+      try {
+        setCheckingServer(true);
+        const { fetchQAPairsFromServer } = await import('@/utils/qaStorage');
+        const serverData = await fetchQAPairsFromServer();
+
+        if (serverData && serverData.length > 0) {
+          const { updatePreTrainedData } = await import('@/utils/preTrainedAnswers');
+          updatePreTrainedData(serverData);
+          toast.success(`Loaded ${serverData.length} Q&A pairs from server`);
+        }
+      } catch (error) {
+        console.error('Error checking for server data:', error);
+      } finally {
+        setCheckingServer(false);
+      }
+    };
+
+    checkForServerData();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -37,7 +59,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
     setLoading(true);
     setResult(null);
 
-    // Scroll to result section
     setTimeout(() => {
       if (resultRef.current) {
         resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -45,10 +66,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
     }, 100);
 
     try {
-      // Use the LLM service
       const { generateAnswer } = await import('@/utils/llmService');
       
-      // Read the file content if there's a file
       let fileData = null;
       if (file) {
         const reader = new FileReader();
@@ -95,7 +114,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Animated Text Section - Above the question input */}
       <div className={`py-3 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-100/90'} rounded-md overflow-hidden mb-6`}>
         <div className="animate-marquee whitespace-nowrap">
           <span className={isDarkMode ? "text-blue-400 mx-4" : "text-blue-700 mx-4 font-medium"}>Welcome to TDS Solver</span>
@@ -105,6 +123,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
           <span className={isDarkMode ? "text-yellow-400 mx-4" : "text-yellow-700 mx-4 font-medium"}>Tools in Data Science</span>
         </div>
       </div>
+      
+      {checkingServer && (
+        <div className={`${isDarkMode ? 'bg-blue-950/30' : 'bg-blue-50'} rounded-md p-2 flex items-center justify-center gap-2`}>
+          <CloudIcon size={14} className={`animate-pulse ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+          <span className="text-sm">Syncing data from server...</span>
+        </div>
+      )}
       
       <div>
         <label htmlFor="question" className={`block text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-700'} mb-2 flex items-center`}>
@@ -166,7 +191,6 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ setResult, setLoading, resu
         </Button>
       </div>
 
-      {/* GA Topics Grid */}
       <div className="mt-8">
         <h3 className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-700'} mb-4`}>Graded Assignment Topics:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -32,8 +32,23 @@ export async function saveQAPairsToStorage(data: QuestionAnswer[]): Promise<bool
  * Uses localStorage with pre-trained data as fallback
  */
 export async function initializeQADatabase(): Promise<QuestionAnswer[]> {
+  // First try to get data from server (for sharing between devices)
   try {
-    // Try to get from localStorage
+    console.log('Attempting to fetch Q&A data from server...');
+    const serverData = await fetchQAPairsFromServer();
+    
+    if (serverData && serverData.length > 0) {
+      console.log(`Loaded ${serverData.length} Q&A pairs from server`);
+      // Update localStorage with the server data for faster local access
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serverData));
+      return serverData;
+    }
+  } catch (error) {
+    console.error('Error loading from server, falling back to local storage:', error);
+  }
+  
+  // Try to get from localStorage if server fails
+  try {
     const storedData = localStorage.getItem(STORAGE_KEY);
     
     if (storedData) {
@@ -131,5 +146,73 @@ export function clearQADatabase(): boolean {
     console.error('Error clearing database:', error);
     toast.error('Failed to clear database');
     return false;
+  }
+}
+
+/**
+ * Sync the Q&A pairs to the server for cross-device sharing
+ */
+export async function syncQAPairsToServer(data: QuestionAnswer[]): Promise<boolean> {
+  try {
+    console.log('Syncing Q&A pairs to server...');
+    const formData = new FormData();
+    formData.append('action', 'syncQA');
+    formData.append('qaData', JSON.stringify(data));
+    
+    const response = await fetch('/api/tds', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      toast.success('Q&A pairs synced to server successfully');
+      return true;
+    } else {
+      toast.error(result.message || 'Failed to sync to server');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error syncing to server:', error);
+    toast.error('Network error while syncing to server');
+    return false;
+  }
+}
+
+/**
+ * Fetch Q&A pairs from the server for cross-device sharing
+ */
+export async function fetchQAPairsFromServer(): Promise<QuestionAnswer[] | null> {
+  try {
+    console.log('Fetching Q&A pairs from server...');
+    const formData = new FormData();
+    formData.append('action', 'getQA');
+    
+    const response = await fetch('/api/tds', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success && result.data) {
+      console.log(`Successfully fetched ${result.data.length} Q&A pairs from server`);
+      return result.data;
+    } else {
+      console.warn(result.message || 'No data found on server');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching from server:', error);
+    return null;
   }
 }

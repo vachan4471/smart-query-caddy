@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +57,7 @@ const Admin = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileInput, setFileInput] = useState<HTMLInputElement | null>(null);
+  const [serverSyncEnabled, setServerSyncEnabled] = useState(true);
   
   useEffect(() => {
     // Load theme preference
@@ -136,6 +136,12 @@ const Admin = () => {
       // Add the Q&A pair and save to storage
       addQAPair(question, answer, topic);
       toast.success('New Q&A pair added successfully!');
+      
+      // Sync to server if enabled
+      if (serverSyncEnabled) {
+        const { syncQAPairsToServer } = await import('@/utils/qaStorage');
+        await syncQAPairsToServer(getAllQAPairs());
+      }
       
       // Refresh the list from storage
       setQaPairs(getAllQAPairs());
@@ -254,11 +260,13 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      const success = await saveQAPairsToStorage(getAllQAPairs());
+      const { syncQAPairsToServer } = await import('@/utils/qaStorage');
+      const success = await syncQAPairsToServer(getAllQAPairs());
+      
       if (success) {
-        toast.success('Successfully saved all Q&A data to storage');
+        toast.success('Successfully synced all Q&A data to server for sharing');
       } else {
-        toast.error('Failed to save data to storage');
+        toast.error('Failed to sync data to server');
       }
     } catch (error) {
       console.error('Error syncing data:', error);
@@ -266,6 +274,11 @@ const Admin = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const toggleServerSync = () => {
+    setServerSyncEnabled(!serverSyncEnabled);
+    toast.info(`Server sync ${!serverSyncEnabled ? 'enabled' : 'disabled'}`);
   };
   
   const bgGradient = darkMode 
@@ -360,8 +373,19 @@ const Admin = () => {
               className={`text-xs ${darkMode ? 'bg-slate-800 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-600 border-blue-200'}`}
             >
               <SaveIcon size={14} className="mr-1" />
-              {isLoading ? 'Saving...' : 'Save All Data'}
+              {isLoading ? 'Syncing...' : 'Sync to Server (Share)'}
             </Button>
+            
+            <div className={`flex items-center gap-2 px-2 py-1 rounded text-xs ${
+              darkMode ? 'bg-slate-800 border border-slate-700' : 'bg-slate-100 border border-slate-300'
+            }`}>
+              <span>Auto-sync:</span>
+              <Switch 
+                checked={serverSyncEnabled} 
+                onCheckedChange={toggleServerSync} 
+                className="data-[state=checked]:bg-green-600 h-4 w-8" 
+              />
+            </div>
             
             <Button 
               variant="outline" 

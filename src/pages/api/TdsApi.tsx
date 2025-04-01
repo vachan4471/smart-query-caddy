@@ -36,6 +36,49 @@ export default async function handler(
       });
     });
 
+    // Check if this is a QA data sync request
+    const action = Array.isArray(fields.action) ? fields.action[0] : fields.action || '';
+    
+    if (action === 'syncQA') {
+      const qaDataStr = Array.isArray(fields.qaData) ? fields.qaData[0] : fields.qaData || '';
+      
+      // Store QA data in a special global variable for server-side persistence
+      if (typeof global.tdsQAData === 'undefined') {
+        global.tdsQAData = {};
+      }
+      
+      try {
+        const qaData = JSON.parse(qaDataStr);
+        global.tdsQAData = qaData;
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: `Successfully synced ${qaData.length} Q&A pairs to server` 
+        });
+      } catch (error) {
+        console.error('Error syncing QA data:', error);
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Failed to sync Q&A data to server' 
+        });
+      }
+    }
+    
+    if (action === 'getQA') {
+      if (typeof global.tdsQAData !== 'undefined' && Object.keys(global.tdsQAData).length > 0) {
+        return res.status(200).json({ 
+          success: true,
+          data: global.tdsQAData,
+          message: `Successfully retrieved Q&A pairs from server` 
+        });
+      } else {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No Q&A data found on server' 
+        });
+      }
+    }
+
     // Get question from form fields
     const question = Array.isArray(fields.question) 
       ? fields.question[0] 
@@ -86,5 +129,14 @@ export default async function handler(
   } catch (error) {
     console.error('API error:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+// Add this for global server-side data storage
+declare global {
+  namespace NodeJS {
+    interface Global {
+      tdsQAData?: any;
+    }
   }
 }
