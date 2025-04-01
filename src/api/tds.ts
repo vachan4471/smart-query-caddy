@@ -21,6 +21,13 @@ export async function handleTdsRequest(formData: FormData) {
     };
   }
   
-  const answer = await generateAnswer(question, fileData);
-  return { answer };
+  try {
+    const answer = await generateAnswer(question, fileData);
+    return { answer };
+  } catch (error) {
+    console.error('Error in TDS API request:', error);
+    return { 
+      answer: "Sorry, there was an error processing your request. Please try again or check if the database has been loaded correctly." 
+    };
+  }
 }

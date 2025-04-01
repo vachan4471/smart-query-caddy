@@ -1,7 +1,7 @@
 
 /**
  * Enhanced storage utility for Q&A pairs
- * Provides local storage functionality with improved reliability
+ * Provides local storage functionality with improved reliability and cross-device sharing
  */
 
 import { toast } from 'sonner';
@@ -43,6 +43,7 @@ export async function initializeQADatabase(): Promise<QuestionAnswer[]> {
     }
   } catch (error) {
     console.error('Error loading stored Q&A pairs:', error);
+    toast.error('Error accessing local storage. Using initial data.');
   }
   
   console.log('Using initial pre-trained data');
@@ -96,18 +97,39 @@ export function importQAData(file: File): Promise<QuestionAnswer[]> {
           'topic' in item)) {
           throw new Error('Invalid data format');
         }
+
+        // Save imported data to localStorage for immediate use
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(jsonData));
+        toast.success(`Imported and saved ${jsonData.length} Q&A pairs`);
         
         resolve(jsonData);
       } catch (error) {
         console.error('Error parsing imported data:', error);
+        toast.error('Invalid file format. Please upload a valid JSON file.');
         reject(error);
       }
     };
     
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
+      toast.error('Failed to read file');
     };
     
     reader.readAsText(file);
   });
+}
+
+/**
+ * Clear database function for testing and troubleshooting
+ */
+export function clearQADatabase(): boolean {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    toast.success('Database cleared. Using initial data on next load.');
+    return true;
+  } catch (error) {
+    console.error('Error clearing database:', error);
+    toast.error('Failed to clear database');
+    return false;
+  }
 }

@@ -1,3 +1,4 @@
+
 /**
  * Pre-trained answers for common TDS questions
  * This database can be expanded with more Q&A pairs
@@ -48,11 +49,14 @@ function loadStoredData(): QuestionAnswer[] {
   try {
     const storedData = localStorage.getItem('tdsQAPairs');
     if (storedData) {
-      return JSON.parse(storedData);
+      const parsedData = JSON.parse(storedData);
+      console.log(`Loaded ${parsedData.length} Q&A pairs from localStorage`);
+      return parsedData;
     }
   } catch (error) {
     console.error('Error loading stored Q&A pairs:', error);
   }
+  console.log('Using initial data with 5 pre-trained Q&A pairs');
   return [...initialPreTrainedData]; // Return copy of initial data if no stored data
 }
 

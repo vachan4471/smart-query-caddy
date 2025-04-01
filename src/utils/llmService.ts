@@ -1,7 +1,7 @@
 
 import { config, systemPrompt } from './config';
 import { findMatchingAnswer } from './preTrainedAnswers';
-import { initializeQADatabase } from './gistStorage';
+import { initializeQADatabase } from './qaStorage';
 
 /**
  * Service for interacting with LLM APIs and pre-trained answers
@@ -20,15 +20,15 @@ export async function generateAnswer(question: string, fileData: any = null): Pr
     });
   }
 
-  // Make sure we have the latest data from cloud storage
+  // Make sure we have the latest data from local storage
   let qaData;
   try {
-    console.log('Fetching latest Q&A data from cloud storage...');
+    console.log('Fetching latest Q&A data from storage...');
     qaData = await initializeQADatabase();
     console.log(`Retrieved ${qaData.length} Q&A pairs for matching`);
   } catch (error) {
-    console.error('Failed to refresh Q&A database from cloud:', error);
-    // Continue with local data if cloud sync fails
+    console.error('Failed to refresh Q&A database from storage:', error);
+    // Continue with pre-trained data if storage sync fails
   }
 
   // Check if we have a pre-trained answer
