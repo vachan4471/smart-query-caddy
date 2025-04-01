@@ -43,13 +43,28 @@ const Index = () => {
     if (!dataInitialized) {
       const loadData = async () => {
         try {
+          console.log('Initializing Q&A database from cloud storage...');
           const cloudData = await initializeQADatabase();
-          updatePreTrainedData(cloudData);
-          console.log(`Loaded ${cloudData.length} Q&A pairs from storage`);
+          
+          if (cloudData && cloudData.length > 0) {
+            updatePreTrainedData(cloudData);
+            console.log(`Loaded ${cloudData.length} Q&A pairs from cloud storage`);
+            
+            // Double-check that we got the data by getting all pairs again
+            const currentData = getAllQAPairs();
+            console.log(`Currently have ${currentData.length} Q&A pairs available in memory`);
+            
+            toast.success(`Loaded ${cloudData.length} Q&A entries`);
+          } else {
+            console.warn('No data retrieved from cloud storage');
+            toast.warning('Using local database - some Q&A pairs may not be available');
+          }
+          
           setDataInitialized(true);
         } catch (error) {
           console.error('Error initializing Q&A database:', error);
-          toast.error('Failed to load Q&A database');
+          toast.error('Failed to load Q&A database from cloud');
+          setDataInitialized(true); // Still mark as initialized to prevent endless retries
         }
       };
       

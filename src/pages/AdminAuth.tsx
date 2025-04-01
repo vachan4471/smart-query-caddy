@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LockIcon, KeyIcon } from 'lucide-react';
-import { initializeQADatabase } from '@/utils/gistStorage';
-import { updatePreTrainedData } from '@/utils/preTrainedAnswers';
+import { initializeQADatabase, saveQAPairsToGist } from '@/utils/gistStorage';
+import { updatePreTrainedData, getAllQAPairs } from '@/utils/preTrainedAnswers';
 
 const AdminAuth = () => {
   const [password, setPassword] = useState('');
@@ -24,14 +24,25 @@ const AdminAuth = () => {
       
       // Sync with cloud database to ensure admin has the latest data
       try {
+        toast.info('Syncing with cloud database...');
         const cloudData = await initializeQADatabase();
         updatePreTrainedData(cloudData);
         console.log(`Admin: Synced ${cloudData.length} Q&A pairs from cloud storage`);
+        
+        // Test write access to cloud storage
+        const currentData = getAllQAPairs();
+        const testResult = await saveQAPairsToGist(currentData);
+        
+        if (testResult) {
+          toast.success('Admin access granted with cloud storage write access');
+        } else {
+          toast.warning('Admin access granted, but cloud storage write access might be limited');
+        }
       } catch (error) {
         console.error('Error syncing with cloud storage:', error);
+        toast.warning('Admin access granted, but cloud sync failed. Some features may be limited.');
       }
       
-      toast.success('Admin access granted');
       navigate('/admin');
     } else {
       toast.error('Incorrect password');
