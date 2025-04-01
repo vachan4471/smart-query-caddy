@@ -9,7 +9,7 @@ import { MoonIcon, SunIcon, PlusIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
 import { getAllQAPairs, updatePreTrainedData } from '@/utils/preTrainedAnswers';
-import { initializeQADatabase } from '@/utils/gistStorage';
+import { initializeQADatabase } from '@/utils/qaStorage';
 
 const Index = () => {
   const [result, setResult] = useState<string | null>(null);
@@ -39,31 +39,31 @@ const Index = () => {
     const isAuthenticated = localStorage.getItem('admin_authenticated');
     setIsAdmin(isAuthenticated === 'true');
     
-    // Initialize Q&A database from cloud storage
+    // Initialize Q&A database from storage
     if (!dataInitialized) {
       const loadData = async () => {
         try {
-          console.log('Initializing Q&A database from cloud storage...');
-          const cloudData = await initializeQADatabase();
+          console.log('Initializing Q&A database from storage...');
+          const storageData = await initializeQADatabase();
           
-          if (cloudData && cloudData.length > 0) {
-            updatePreTrainedData(cloudData);
-            console.log(`Loaded ${cloudData.length} Q&A pairs from cloud storage`);
+          if (storageData && storageData.length > 0) {
+            updatePreTrainedData(storageData);
+            console.log(`Loaded ${storageData.length} Q&A pairs from storage`);
             
             // Double-check that we got the data by getting all pairs again
             const currentData = getAllQAPairs();
             console.log(`Currently have ${currentData.length} Q&A pairs available in memory`);
             
-            toast.success(`Loaded ${cloudData.length} Q&A entries`);
+            toast.success(`Loaded ${storageData.length} Q&A entries`);
           } else {
-            console.warn('No data retrieved from cloud storage');
-            toast.warning('Using local database - some Q&A pairs may not be available');
+            console.warn('No data retrieved from storage');
+            toast.warning('Using initial database - some Q&A pairs may not be available');
           }
           
           setDataInitialized(true);
         } catch (error) {
           console.error('Error initializing Q&A database:', error);
-          toast.error('Failed to load Q&A database from cloud');
+          toast.error('Failed to load Q&A database');
           setDataInitialized(true); // Still mark as initialized to prevent endless retries
         }
       };

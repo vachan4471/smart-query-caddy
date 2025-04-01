@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,15 +23,16 @@ import {
 import { 
   ArrowLeftIcon, 
   BookOpenIcon, 
-  CheckCircleIcon, 
-  CloudIcon,
+  CheckCircleIcon,
   DatabaseIcon,
+  DownloadIcon,
   MoonIcon, 
   PlusIcon, 
   RefreshCwIcon,
   SaveIcon, 
   SunIcon, 
-  TrashIcon 
+  TrashIcon,
+  UploadIcon
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Link } from 'react-router-dom';
@@ -40,9 +42,10 @@ import {
   deleteQAPair, 
   resetQADatabase,
   getAllQAPairs,
-  saveDataToStorage
+  saveDataToStorage,
+  updatePreTrainedData
 } from '@/utils/preTrainedAnswers';
-import { saveQAPairsToGist, createInitialGist } from '@/utils/gistStorage';
+import { saveQAPairsToStorage, exportQAData, importQAData } from '@/utils/qaStorage';
 
 const Admin = () => {
   const [question, setQuestion] = useState('');
@@ -54,6 +57,7 @@ const Admin = () => {
   const [password, setPassword] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileInput, setFileInput] = useState<HTMLInputElement | null>(null);
   
   useEffect(() => {
     // Load theme preference
@@ -77,6 +81,22 @@ const Admin = () => {
     
     // Load the latest Q&A pairs
     setQaPairs(getAllQAPairs());
+    
+    // Create a file input element for importing data
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.style.display = 'none';
+    input.addEventListener('change', handleFileSelected);
+    document.body.appendChild(input);
+    setFileInput(input);
+    
+    return () => {
+      // Clean up the file input when component unmounts
+      if (input && document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
+    };
   }, []);
   
   useEffect(() => {
@@ -113,21 +133,6 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      // First make sure we have write access to cloud storage
-      const testAccess = await saveQAPairsToGist(getAllQAPairs());
-      
-      if (!testAccess) {
-        // If cloud save fails, try creating the gist first
-        const gistCreated = await createInitialGist();
-        if (!gistCreated) {
-          const proceed = confirm("Unable to save to cloud storage. Continue saving locally only?");
-          if (!proceed) {
-            setIsLoading(false);
-            return;
-          }
-        }
-      }
-      
       // Add the Q&A pair and save to storage
       addQAPair(question, answer, topic);
       toast.success('New Q&A pair added successfully!');
@@ -151,13 +156,7 @@ const Admin = () => {
     
     try {
       if (deleteQAPair(index)) {
-        // After deleting locally, sync with cloud
-        const cloudSync = await saveQAPairsToGist(getAllQAPairs());
-        if (cloudSync) {
-          toast.success('Q&A pair removed from both local and cloud storage');
-        } else {
-          toast.warning('Q&A pair removed from local storage only. Cloud sync failed.');
-        }
+        toast.success('Q&A pair removed successfully');
         
         // Refresh the list from storage
         setQaPairs(getAllQAPairs());
@@ -178,15 +177,7 @@ const Admin = () => {
       
       try {
         resetQADatabase();
-        
-        // After resetting locally, sync with cloud
-        const cloudSync = await saveQAPairsToGist(getAllQAPairs());
-        if (cloudSync) {
-          toast.success('Database reset and synced with cloud storage');
-        } else {
-          toast.warning('Database reset locally, but cloud sync failed');
-        }
-        
+        toast.success('Database reset successfully');
         setQaPairs(getAllQAPairs());
       } catch (error) {
         console.error('Error resetting database:', error);
@@ -197,19 +188,81 @@ const Admin = () => {
     }
   };
   
-  const handleForceCloudSync = async () => {
+  const handleExportData = () => {
+    try {
+      exportQAData(getAllQAPairs());
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('Failed to export data');
+    }
+  };
+  
+  const handleImportClick = () => {
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+  
+  const handleFileSelected = async (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    
+    if (input.files && input.files.length > 0) {
+      setIsLoading(true);
+      
+      try {
+        const file = input.files[0];
+        const importedData = await importQAData(file);
+        
+        // Ask for confirmation before replacing existing data
+        if (confirm(`Import ${importedData.length} Q&A pairs? This will combine with your existing database.`)) {
+          // Combine with existing data, avoiding duplicates
+          const existingData = getAllQAPairs();
+          const combinedData = [...existingData];
+          
+          // Add only non-duplicate entries from imported data
+          importedData.forEach(importedItem => {
+            // Check if this question already exists
+            const exists = existingData.some(
+              existing => existing.question.trim().toLowerCase() === importedItem.question.trim().toLowerCase()
+            );
+            
+            if (!exists) {
+              combinedData.push(importedItem);
+            }
+          });
+          
+          // Update the database
+          updatePreTrainedData(combinedData);
+          saveDataToStorage();
+          
+          // Refresh the display
+          setQaPairs(getAllQAPairs());
+          toast.success(`Successfully imported ${importedData.length} Q&A pairs`);
+        }
+      } catch (error) {
+        console.error('Error importing data:', error);
+        toast.error('Failed to import data. Please check the file format.');
+      } finally {
+        // Reset the file input
+        input.value = '';
+        setIsLoading(false);
+      }
+    }
+  };
+  
+  const handleForceSync = async () => {
     setIsLoading(true);
     
     try {
-      const cloudSync = await saveQAPairsToGist(getAllQAPairs());
-      if (cloudSync) {
-        toast.success('Successfully synced with cloud storage');
+      const success = await saveQAPairsToStorage(getAllQAPairs());
+      if (success) {
+        toast.success('Successfully saved all Q&A data to storage');
       } else {
-        toast.error('Failed to sync with cloud storage');
+        toast.error('Failed to save data to storage');
       }
     } catch (error) {
-      console.error('Error syncing with cloud:', error);
-      toast.error('Error occurred during cloud sync');
+      console.error('Error syncing data:', error);
+      toast.error('Error occurred during sync operation');
     } finally {
       setIsLoading(false);
     }
@@ -298,16 +351,38 @@ const Admin = () => {
             Manage pre-trained questions and answers
           </p>
           
-          <div className="mt-4">
+          <div className="mt-4 flex justify-center gap-2">
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleForceCloudSync}
+              onClick={handleForceSync}
               disabled={isLoading}
               className={`text-xs ${darkMode ? 'bg-slate-800 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-600 border-blue-200'}`}
             >
-              <CloudIcon size={14} className="mr-1" />
-              {isLoading ? 'Syncing...' : 'Force Cloud Sync'}
+              <SaveIcon size={14} className="mr-1" />
+              {isLoading ? 'Saving...' : 'Save All Data'}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportData}
+              disabled={isLoading}
+              className={`text-xs ${darkMode ? 'bg-slate-800 text-green-400 border-green-500/30' : 'bg-green-50 text-green-600 border-green-200'}`}
+            >
+              <DownloadIcon size={14} className="mr-1" />
+              Export Data
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleImportClick}
+              disabled={isLoading}
+              className={`text-xs ${darkMode ? 'bg-slate-800 text-purple-400 border-purple-500/30' : 'bg-purple-50 text-purple-600 border-purple-200'}`}
+            >
+              <UploadIcon size={14} className="mr-1" />
+              Import Data
             </Button>
           </div>
         </header>

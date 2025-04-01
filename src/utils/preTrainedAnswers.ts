@@ -3,7 +3,7 @@
  * This database can be expanded with more Q&A pairs
  */
 
-import { saveQAPairsToGist } from './gistStorage';
+import { saveQAPairsToStorage } from './qaStorage';
 
 export interface QuestionAnswer {
   question: string;
@@ -56,18 +56,14 @@ function loadStoredData(): QuestionAnswer[] {
   return [...initialPreTrainedData]; // Return copy of initial data if no stored data
 }
 
-// Function to save current data to storage (both local and cloud)
+// Function to save current data to storage
 export function saveDataToStorage() {
   try {
     // Save to localStorage for immediate access
-    localStorage.setItem('tdsQAPairs', JSON.stringify(preTrainedData));
-    console.log(`Saved ${preTrainedData.length} Q&A pairs to localStorage`);
-    
-    // Also save to cloud storage (GitHub Gist)
-    saveQAPairsToGist(preTrainedData)
+    saveQAPairsToStorage(preTrainedData)
       .then(success => {
         if (success) {
-          console.log(`Synced ${preTrainedData.length} Q&A pairs to cloud storage`);
+          console.log(`Saved ${preTrainedData.length} Q&A pairs to storage`);
         }
       });
   } catch (error) {
@@ -193,7 +189,7 @@ export function addQAPair(question: string, answer: string, topic: string = "GA1
   // Add to the in-memory array
   preTrainedData.push(newPair);
   
-  // Save to localStorage and cloud storage for persistence
+  // Save to localStorage for persistence
   saveDataToStorage();
   
   console.log('Added new Q&A pair:', newPair);
@@ -211,7 +207,7 @@ export function deleteQAPair(index: number): boolean {
   // Remove from the in-memory array
   preTrainedData.splice(index, 1);
   
-  // Save to localStorage and cloud storage for persistence
+  // Save to localStorage for persistence
   saveDataToStorage();
   
   console.log('Deleted Q&A pair at index:', index);
@@ -236,7 +232,7 @@ export function getAllQAPairs(): QuestionAnswer[] {
 
 /**
  * Function to update preTrainedData with external data
- * Used when loading from cloud storage
+ * Used when loading from storage
  */
 export function updatePreTrainedData(data: QuestionAnswer[]): void {
   preTrainedData = [...data];
